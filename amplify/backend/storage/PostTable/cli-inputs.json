@@ -1,0 +1,22 @@
+{
+  "resourceName": "PostTable",
+  "tableName": "PostTable",
+  "partitionKey": {
+    "fieldName": "id",
+    "fieldType": "string"
+  },
+  "sortKey": {
+    "fieldName": "title",
+    "fieldType": "string"
+  },
+  "gsi": [
+    {
+      "name": "postByUserName",
+      "partitionKey": {
+        "fieldName": "username",
+        "fieldType": "string"
+      }
+    }
+  ],
+  "triggerFunctions": []
+}

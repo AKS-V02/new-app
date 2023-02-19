@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "storage": {
+      "PostTable": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

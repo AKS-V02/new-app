@@ -34,5 +34,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.63.2",
+    "aws-cdk-lib": "^2.63.2",
+    "constructs": "^10.1.241"
   }
 }
