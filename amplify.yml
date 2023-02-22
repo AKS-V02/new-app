@@ -3,8 +3,8 @@ backend:
   phases:
     preBuild:
       commands:
-        - install java-11-amazon-corretto-devel $HOME
-        - install gradle $HOME
+        - install java-11-amazon-corretto-devel /root
+        - install gradle /root
     build:
       commands:
         - '# Execute Amplify CLI with the helper script'
