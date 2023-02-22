@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "paths": {
+    "/comments": {
+      "name": "/comments",
+      "lambdaFunction": "CommentsLambda",
+      "permissions": {
+        "setting": "protected",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ],
+        "guest": [
+          "read"
+        ]
+      }
+    }
+  }
+}
