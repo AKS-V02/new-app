@@ -14,6 +14,7 @@ function App() {
   return (
     <div className="App">
       new App
+      <p>{process.env.REACT_APP_ID}</p>
       <p>{abs.somting}</p>
       <p>{abs.dothing}</p>
       <button
