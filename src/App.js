@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
-  const abs = process.env.USER_BRANCH;
+  const abs = process.env.REACT_APP_USER_BRANCH;
 
   function onclickfunction(){
 
@@ -13,7 +13,7 @@ function App() {
   return (
     <div className="App">
       new App
-      <p>{process.env._CUSTOM_IMAGE}</p>
+      <p>{process.env.REACT_APP_COMPANY}</p>
       <button
             type="button"
             className=""
