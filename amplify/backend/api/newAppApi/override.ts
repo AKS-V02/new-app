@@ -18,6 +18,26 @@ export function override(resources: AmplifyApiRestResourceStackTemplate) {
       "Fn::GetAtt": ["authnewapp", "Outputs.UserPoolId"],
     }
   );
+
+  resources.addCfnParameter(
+    {
+      type: "String",
+      description:
+        "custom scope value",
+      default: "json",
+    },
+    "ScopeValue",
+  );
+
+  resources.addCfnParameter(
+    {
+      type: "String",
+      description:
+        "resourse server identifier",
+      default: "testOverrideIdentifier",
+    },
+    "ResourseIdentifier",
+  );
   // create the authorizer using the AuthCognitoUserPoolId parameter defined above
   resources.restApi.addPropertyOverride("Body.securityDefinitions", {
     Cognito: {
@@ -73,7 +93,8 @@ export function override(resources: AmplifyApiRestResourceStackTemplate) {
       `Body.paths.${path}.x-amazon-apigateway-any-method.security`,
       [
         {
-          Cognito: [],
+          Cognito: [ { 'Fn::Sub': '${ResourseIdentifier}/${ScopeValue}' }, ],
+
         },
       ]
     );
