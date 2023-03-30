@@ -12,15 +12,15 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     "ScopeValue",
   );
 
-  // resources.addCfnParameter(
-  //   {
-  //     type: "String",
-  //     description:
-  //       "resourse server identifier",
-  //     default: "testOverrideIdentifier",
-  //   },
-  //   "ResourseIdentifier",
-  // );
+  resources.addCfnParameter(
+    {
+      type: "String",
+      description:
+        "resourse server identifier",
+      default: "testOverrideIdentifier",
+    },
+    "ResourseIdentifier",
+  );
     
     resources.addCfnResource({
       type:"AWS::Cognito::UserPoolDomain",
