@@ -89,14 +89,27 @@ export function override(resources: AmplifyApiRestResourceStackTemplate) {
     );
     // set the security method to use our user pool authorizer
     // TODO: do we need to destructure the other security methods as well?
-    resources.restApi.addPropertyOverride(
-      `Body.paths.${path}.x-amazon-apigateway-any-method.security`,
-      [
-        {
-          Cognito: [ { 'Fn::Sub': '${ResourseIdentifier}/${ScopeValue}' }, ],
-
-        },
-      ]
-    );
+    if(path.includes("comments")){
+      resources.restApi.addPropertyOverride(
+        `Body.paths.${path}.x-amazon-apigateway-any-method.security`,
+        [
+          {
+            Cognito: [ { 'Fn::Sub': '${ResourseIdentifier}/${ScopeValue}' }, ],
+  
+          },
+        ]
+      );
+    } else {
+      resources.restApi.addPropertyOverride(
+        `Body.paths.${path}.x-amazon-apigateway-any-method.security`,
+        [
+          {
+            Cognito: [ ],
+  
+          },
+        ]
+      );
+    }
+    
   }
 }
