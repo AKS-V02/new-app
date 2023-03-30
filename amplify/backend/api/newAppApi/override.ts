@@ -104,7 +104,7 @@ export function override(resources: AmplifyApiRestResourceStackTemplate) {
         `Body.paths.${path}.x-amazon-apigateway-any-method.security`,
         [
           {
-            Cognito: [ ],
+            Cognito: [  ],
   
           },
         ]
