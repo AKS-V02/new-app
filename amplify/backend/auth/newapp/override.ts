@@ -120,7 +120,7 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
           "GenerateSecret" : true,
           "AllowedOAuthFlows" : [ "client_credentials" ],
           "SupportedIdentityProviders" : [ "COGNITO" ],
-          "AllowedOAuthScopes" : [ { 'Fn::Sub': '${ResourseIdentifier}/${ScopeValue}' }, ],
+          "AllowedOAuthScopes" : [ { 'Fn::Sub': '{ "Ref" : "testOverrideResourceServer" }/${ScopeValue}' }, ],
            "ExplicitAuthFlows" : [ "ALLOW_REFRESH_TOKEN_AUTH" ],
            "AllowedOAuthFlowsUserPoolClient" : true,
         }

@@ -23,12 +23,12 @@ Amplify.configure({
 });
 
 function App() {
-  const abs = envVar[process.env.REACT_APP_Environment];
+  const abs = envVar[process.env.REACT_APP_DEPLOYMENT_ENV];
   const [responseVal, setResponseVal] = useState(""); 
 
   function onclickfunction(){
 
-    alert("environmet is "+process.env.REACT_APP_Environment);
+    alert("environmet is "+process.env.REACT_APP_DEPLOYMENT_ENV);
   }
 
   async function getToken(){
@@ -50,7 +50,6 @@ function App() {
   //     "Content-Type": 'application/x-www-form-urlencoded'
   //       } 
   //   }
-
 
         const apiName = "cognitoApi";
         const path = '/oauth2/token';
