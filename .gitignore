@@ -64,4 +64,5 @@ amplify-gradle-config.json
 amplifytools.xcconfig
 .secret-*
 **.sample
+amplify\backend\function\CommentsLambda\.gradle
 #amplify-do-not-edit-end
