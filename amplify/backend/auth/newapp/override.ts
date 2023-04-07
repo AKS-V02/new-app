@@ -41,7 +41,7 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
   //       "Ref": "cognito-group-admin-role"
   //    } ]
   //   }
-  // },"cognito-group-admin-policy");
+  // },"cognitogroupadminpolicy");
 
   resources.addCfnResource({
     type:"AWS::IAM::Role",
@@ -85,7 +85,7 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
         }
       ]
     }
-  },"cognito-group-admin-role");
+  },"CognitoGroupAdminRole");
 
   resources.addCfnResource({
     type:"AWS::Cognito::UserPoolGroup",
@@ -93,9 +93,9 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
       "UserPoolId": resources.userPool.ref,
       "GroupName" : "admin-group",
       "Precedence" : 0,
-      "RoleArn" : {"Fn::GetAtt" : ["cognito-group-admin-role", "Arn"] }
+      "RoleArn" : {"Fn::GetAtt" : ["cognitogroupadminrole", "Arn"] }
     }
-  },"cognito-admin-group");
+  },"CognitoAdminGroup");
     
     resources.addCfnResource({
       type:"AWS::Cognito::UserPoolDomain",
