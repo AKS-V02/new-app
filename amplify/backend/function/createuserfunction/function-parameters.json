@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "auth": {
+      "newapp": [
+        "create",
+        "read",
+        "update"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

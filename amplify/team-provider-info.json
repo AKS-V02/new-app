@@ -17,7 +17,8 @@
         "CommentsLambda": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
           "s3Key": "amplify-builds/CommentsLambda-30583632365077387264-build.zip"
-        }
+        },
+        "createuserfunction": {}
       },
       "auth": {
         "newapp": {}

@@ -1,5 +1,4 @@
 import { AmplifyAuthCognitoStackTemplate } from '@aws-amplify/cli-extensibility-helper';
-import * as cdk from '@aws-cdk/core';
 
 export function override(resources: AmplifyAuthCognitoStackTemplate) {
   resources.addCfnParameter(
@@ -21,6 +20,82 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     },
     "ResourseIdentifier",
   );
+
+  // resources.addCfnResource({
+  //   type:"AWS::IAM::Policy",
+  //   properties:{
+  //     "PolicyName" : resources.userPool.userPoolName+"-group-admin-policy",
+  //     "PolicyDocument": {
+  //       "Version": "2012-10-17",
+  //       "Statement": [
+  //           {
+  //               "Effect": "Allow",
+  //               "Action": [
+  //                 "cognito-idp:ListGroups"
+  //               ],
+  //               "Resource": resources.userPool.attrArn
+  //           }
+  //       ]
+  //     },
+  //     "Roles": [ {
+  //       "Ref": "cognito-group-admin-role"
+  //    } ]
+  //   }
+  // },"cognito-group-admin-policy");
+
+  resources.addCfnResource({
+    type:"AWS::IAM::Role",
+    properties:{
+      "RoleName" : resources.userPool.userPoolName+"-group-admin-role",
+      "AssumeRolePolicyDocument" : {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Federated": "cognito-identity.amazonaws.com"
+                },
+                "Action": "sts:AssumeRoleWithWebIdentity",
+                "Condition": {
+                    "StringEquals": {
+                        "cognito-identity.amazonaws.com:aud": resources.identityPool.ref
+                    },
+                    "ForAnyValue:StringLike": {
+                        "cognito-identity.amazonaws.com:amr": "authenticated"
+                    }
+                }
+            }
+        ]
+    },
+      "Policies" : [
+        {
+          "PolicyName" : resources.userPool.userPoolName+"-group-admin-policy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                      "cognito-idp:ListGroups"
+                    ],
+                    "Resource": resources.userPool.attrArn
+                }
+            ]
+          }
+        }
+      ]
+    }
+  },"cognito-group-admin-role");
+
+  resources.addCfnResource({
+    type:"AWS::Cognito::UserPoolGroup",
+    properties:{
+      "UserPoolId": resources.userPool.ref,
+      "GroupName" : "admin-group",
+      "Precedence" : 0,
+      "RoleArn" : {"Fn::GetAtt" : ["cognito-group-admin-role", "Arn"] }
+    }
+  },"cognito-admin-group");
     
     resources.addCfnResource({
       type:"AWS::Cognito::UserPoolDomain",

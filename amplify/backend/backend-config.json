@@ -9,6 +9,14 @@
           ],
           "category": "function",
           "resourceName": "CommentsLambda"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "createuserfunction"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -45,6 +53,20 @@
     "CommentsLambda": {
       "build": true,
       "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "createuserfunction": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "newapp"
+        }
+      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     }
