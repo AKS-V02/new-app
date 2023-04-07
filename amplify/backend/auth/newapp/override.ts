@@ -93,7 +93,7 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
       "UserPoolId": resources.userPool.ref,
       "GroupName" : "admin-group",
       "Precedence" : 0,
-      "RoleArn" : {"Fn::GetAtt" : ["cognitogroupadminrole", "Arn"] }
+      "RoleArn" : {"Fn::GetAtt" : ["CognitoGroupAdminRole", "Arn"] }
     }
   },"CognitoAdminGroup");
     
