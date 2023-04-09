@@ -85,12 +85,30 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
                     ],
                     "Resource": resources.userPool.attrArn
                 }
+              //   ,
+              //   {
+              //     "Action": [
+              //         "s3:DeleteObject",
+              //         "s3:PutObject",
+              //         "s3:PutObjectAcl",
+              //         "s3:GetObject"
+              //     ],
+              //     "Resource": [
+                      
+              //     ],
+              //     "Effect": "Allow"
+              // }
             ]
           }
         }
       ]
     }
   },"CognitoGroupAdminRole");
+
+
+  // resources.addCfnOutput({
+  //   value: {"Fn::GetAtt" : ["CognitoGroupAdminRole", "Arn"] }
+  // },"CognitoGroupAdminRoleArn");
 
   resources.addCfnResource({
     type:"AWS::Cognito::UserPoolGroup",

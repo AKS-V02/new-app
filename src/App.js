@@ -1,11 +1,11 @@
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 import { envVar } from './envVar';
 import base64 from "base-64";
-import { Amplify, API, Auth } from "aws-amplify";
+import { Amplify, API, Auth, Storage } from "aws-amplify";
 import { useState } from 'react';
 import * as AWS from 'aws-sdk';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+// import { CognitoIdentityServiceProvider } from 'aws-sdk';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 
 Amplify.configure({
@@ -32,6 +32,8 @@ Amplify.configure({
   "aws_cognito_verification_mechanisms": [
       "EMAIL"
   ],
+  "aws_user_files_s3_bucket": "newappteststorage172655-dev",
+  "aws_user_files_s3_bucket_region": "ap-south-1",
   API:{
     endpoints:[
       {
@@ -50,7 +52,10 @@ Amplify.configure({
 function App({ signOut, user }) {
   const abs = envVar[process.env.REACT_APP_DEPLOYMENT_ENV];
   const [responseVal, setResponseVal] = useState(""); 
-  const [groups, setGroups] = useState([]); 
+  const [groups, setGroups] = useState([]);
+  const [fileName, setfileName] = useState();
+  const [signedURL, setsignedURL] = useState();
+  const [isUrlAvailable, setisUrlAvailable] = useState(false); 
 
 
 
@@ -210,7 +215,30 @@ function App({ signOut, user }) {
               setGroups(data.Groups)
             }  
           });
-}
+    }
+
+    async function onChange(e) {
+      const file = e.target.files[0];
+      try {
+        await Storage.put(file.name, file 
+        //   {
+        //   contentType: "image/png", // contentType is optional
+        // }
+        );
+        console.log(file.name);
+      } catch (error) {
+        console.log("Error uploading file: ", error);
+      }
+    }
+    function handleChange(e){
+      setfileName(e.target.value);
+      }
+
+      async function getLink(){
+        const signedURL = await Storage.get(fileName);
+        setisUrlAvailable(true);
+        setsignedURL(signedURL);
+      }
 
   return (
     <div className="App">
@@ -220,6 +248,21 @@ function App({ signOut, user }) {
       <p>{process.env.REACT_APP_ID}</p>
       <p>{abs.somting}</p>
       <p>{abs.dothing}</p>
+      <p>
+      <input type="file" onChange={onChange} />
+      </p>
+      <p><input onChange={handleChange}
+                  name="file"
+                  placeholder="file name"
+                  value={fileName}
+                  /></p>
+      {isUrlAvailable && (<p><a href={signedURL} target="_blank" rel='noreferrer'>{fileName}</a></p>)}
+      <p><button
+            type="button"
+            className=""
+            onClick={getLink}>
+                get download link
+            </button></p>
       <button
             type="button"
             className=""

@@ -104,5 +104,12 @@
         }
       ]
     }
+  },
+  "storage": {
+    "testStorage": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3"
+    }
   }
 }

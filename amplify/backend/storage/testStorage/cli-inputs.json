@@ -1,0 +1,14 @@
+{
+  "resourceName": "testStorage",
+  "policyUUID": "800e8cfd",
+  "bucketName": "newappteststorage",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

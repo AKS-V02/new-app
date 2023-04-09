@@ -28,6 +28,9 @@
       },
       "api": {
         "newAppApi": {}
+      },
+      "storage": {
+        "testStorage": {}
       }
     }
   }
