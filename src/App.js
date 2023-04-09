@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import { envVar } from './envVar';
 import base64 from "base-64";
-import { Amplify, API, Storage } from "aws-amplify";
+import { Amplify, API, Auth } from "aws-amplify";
 import { useState } from 'react';
 import * as AWS from 'aws-sdk';
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
@@ -50,10 +50,41 @@ Amplify.configure({
 function App({ signOut, user }) {
   const abs = envVar[process.env.REACT_APP_DEPLOYMENT_ENV];
   const [responseVal, setResponseVal] = useState(""); 
+  const [groups, setGroups] = useState([]); 
 
-  Storage.put(key, file, {
-    acl: 'public-read'
-  });
+
+
+  async function refreshCredentials(){
+    return new Promise((resolve, reject)=>{
+        (AWS.config.credentials).refresh(err =>{
+            if (err) {
+                reject(err)
+                console.log(err);
+            } else {
+                resolve()
+                console.log("resolved");
+            }
+        })
+    })
+   }
+
+
+   async function getAWSTemporaryCreds(){
+    const users = await Auth.currentAuthenticatedUser(); 
+    const cognitoIdentityPool = `cognito-idp.${abs.REGION}.amazonaws.com/${abs.USER_POOL_ID}`; 
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: abs.IDENTITY_POOL_ID,
+        Logins: {
+            [cognitoIdentityPool]: users.getSignInUserSession().getIdToken().getJwtToken()
+        }
+    }, {
+        region: abs.REGION
+    });
+    return await refreshCredentials();
+ }
+
+
+
 
   function onclickfunction(){
 
@@ -64,10 +95,10 @@ function App({ signOut, user }) {
    const client_id= "4cdkp46s6b7mjpeg3lmp3b3kgo";
    const client_secreate = "7s7hgt6gq8fnnct3oh49kborpl5m1o1a9e9dsdl21p0h2ik3n1g";
    
-  //  const DomainUrl = "https://testsecreat.auth.ap-south-1.amazoncognito.com"+
+  //  const DomainUrl = "https://overridetestdomain.auth.ap-south-1.amazoncognito.com"+
   //  "/oauth2/token"+"?"+
   //  "grant_type=client_credentials"+"&"+
-  //  "client_id=5qid1e8lc316ovl1tkvv11jac1"+"&"+
+  //  "client_id=4cdkp46s6b7mjpeg3lmp3b3kgo"+"&"+
   //  "scope=testOverrideIdentifier/json";
 
    var clientCred = base64.encode(`${client_id}:${client_secreate}`);
@@ -101,7 +132,13 @@ function App({ signOut, user }) {
             console.log(error);
         }
 
-    // const resp = await fetch(DomainUrl,options);
+    // const resp = await 
+    // fetch(DomainUrl,options).then(resp => {
+    //   console.log(resp);
+    //   return resp.access_token;
+    // }).catch(err=>{
+    //   console.log(err);
+    // });
     // console.log(resp);
     // return resp.json.access_token;
 
@@ -129,10 +166,57 @@ function App({ signOut, user }) {
     // alert("environmet is "+process.env.REACT_APP_Environment);
   }
 
+
+  async function createuser(){
+    
+    const apiName = "newAppApi";
+    const path = '/create-user';
+    const myInit = {
+        body:{
+          "username": "NewUser",
+          "email": "zinaufumofru-5404@yopmail.com" ,
+          "group": "admin-group"
+        },
+        headers: {
+        Authorization: `Bearer ${(await Auth.currentSession())
+          .getIdToken()
+          .getJwtToken()}`
+      }
+    };
+    try {
+        const response = await API.post(apiName, path, myInit);
+        console.log(response);
+        setResponseVal(response);
+    } catch (error) {
+        console.log(error);
+    }
+  }
+
+  async function listGroup(){
+    await getAWSTemporaryCreds();
+    const cognitoservisceprovider = new AWS.CognitoIdentityServiceProvider({
+      region: abs.REGION
+    });
+        console.log("credential refreshed");
+        cognitoservisceprovider.listGroups({
+            UserPoolId: abs.USER_POOL_ID,
+            Limit:4
+        },function(err, data) {
+            if (err) {
+              console.log(err, err.stack);
+            } 
+            else{
+              console.log(data);
+              setGroups(data.Groups)
+            }  
+          });
+}
+
   return (
     <div className="App">
       new App
       <h1>Hello {user.username}</h1>
+      <p>{user.getSignInUserSession().getIdToken().decodePayload()['cognito:groups'][0]}</p>
       <p>{process.env.REACT_APP_ID}</p>
       <p>{abs.somting}</p>
       <p>{abs.dothing}</p>
@@ -142,15 +226,29 @@ function App({ signOut, user }) {
             onClick={onclickfunction}>
                 Check Environment
             </button>
-
             <button
             type="button"
             className=""
             onClick={apiCall}>
                 call api
             </button>
+            <button
+            type="button"
+            className=""
+            onClick={createuser}>
+                create user api
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={listGroup}>
+                list group
+            </button>
             <button onClick={signOut}>Sign out</button>
             <p>{responseVal}</p>
+            {groups && groups.map((item, index)=>(
+              <p key={index}>{item.GroupName}</p>
+            ))}
     </div>
   );
 }

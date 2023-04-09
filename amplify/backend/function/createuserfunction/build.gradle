@@ -12,7 +12,9 @@ repositories {
 dependencies {
    implementation (
         'com.amazonaws:aws-lambda-java-core:1.2.0',
-        'com.amazonaws:aws-lambda-java-events:2.2.7'
+        'com.amazonaws:aws-lambda-java-events:2.2.7',
+        'com.google.code.gson:gson:2.10.1',
+        'software.amazon.awssdk:cognitoidentityprovider:2.20.37'
     )
 }
 

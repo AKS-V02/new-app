@@ -43,6 +43,9 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
   //   }
   // },"cognitogroupadminpolicy");
 
+
+  //resoursce for cognito admin group poc 
+
   resources.addCfnResource({
     type:"AWS::IAM::Role",
     properties:{
@@ -76,7 +79,9 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
                 {
                     "Effect": "Allow",
                     "Action": [
-                      "cognito-idp:ListGroups"
+                      "cognito-idp:ListGroups",
+                      "cognito-idp:ListUsers",
+                      "cognito-idp:AdminDeleteUser"
                     ],
                     "Resource": resources.userPool.attrArn
                 }
@@ -92,11 +97,82 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     properties:{
       "UserPoolId": resources.userPool.ref,
       "GroupName" : "admin-group",
-      "Precedence" : 0,
+      // "Precedence" : 0,
       "RoleArn" : {"Fn::GetAtt" : ["CognitoGroupAdminRole", "Arn"] }
     }
   },"CognitoAdminGroup");
+
+
+  resources.addCfnResource({
+    type:"AWS::Cognito::UserPoolUser",
+    properties:{
+      "UserPoolId": resources.userPool.ref,
+      "DesiredDeliveryMediums" : [ "EMAIL" ],
+      // "ForceAliasCreation" : Boolean,
+      // "MessageAction" : "RESEND",
+      "UserAttributes" : [ 
+        {
+          "Name" : "email",
+          "Value" : "quappelledaxi-6839@yopmail.com"
+        },
+        {
+          "Name" : "email_verified",
+          "Value" : "true"
+        }
+      ],
+      "Username" : "OrgAdmin"
+    }
+  },"OrgAdmin");
+
+
+  resources.addCfnResource({
+    type:"AWS::Cognito::UserPoolUserToGroupAttachment",
+    properties:{
+      "GroupName" : { "Ref" : "CognitoAdminGroup" },
+      "Username" : { "Ref" : "OrgAdmin" },
+      "UserPoolId" : resources.userPool.ref
+    }
+  },"usertogroupattachement");
+
+
+
+  //property override for mail configuration
+  resources.userPool.addPropertyOverride("AdminCreateUserConfig",
+  {
+    "AllowAdminCreateUserOnly" : false,
+    "InviteMessageTemplate" : {
+      "EmailMessage" : "Your Project App user name '{username}', with temporary password, as {####}",
+      "EmailSubject" : "You are invited to use project app"
+    }
+    // "UnusedAccountValidityDays" : Integer
+  });
+  // resources.userPool.addPropertyOverride("EmailVerificationSubject","Your verification code");
+  // resources.userPool.addPropertyOverride("EmailVerificationMessage","Your verification code for project app {####}");
+  resources.userPool.addPropertyOverride("VerificationMessageTemplate",{
+    "DefaultEmailOption" : "CONFIRM_WITH_CODE",
+    "EmailMessage" : "Your verification code for project app {####}",
+    // "EmailMessageByLink" : String,
+    "EmailSubject" : "Your verification code"
+    // "EmailSubjectByLink" : String,
+    // "SmsMessage" : String
+  });
     
+  resources.identityPoolRoleMap.addPropertyOverride("RoleMappings",{
+   "cognitoGroupRoleMappingWebClient" : {
+        "Type": "Token",
+        "AmbiguousRoleResolution": "AuthenticatedRole",
+        "IdentityProvider" : { "Fn::Join" : [ ":", [ resources.userPool.attrProviderName, resources.userPoolClientWeb.ref ] ] }
+      },
+      "cognitoGroupRoleMappingappClient" : {
+        "Type": "Token",
+        "AmbiguousRoleResolution": "AuthenticatedRole",
+        "IdentityProvider" : { "Fn::Join" : [ ":", [ resources.userPool.attrProviderName, resources.userPoolClient.ref ] ] }
+      }
+  });
+  // resources.identityPoolRoleMap.addPropertyOverride("AmbiguousRoleResolution","AuthenticatedRole");
+
+
+  // resourses for client secreat poc
     resources.addCfnResource({
       type:"AWS::Cognito::UserPoolDomain",
       properties:{
@@ -108,29 +184,6 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
 
     },"overridetestdomain");
 
-
-    // const testOverrideResourceServer = new cdk.CfnResource(resources.userPool.stack,"testOverrideResourceServer",{
-    //   type:"AWS::Cognito::UserPoolResourceServer",
-    //   properties:{
-    //     "Identifier" : {
-    //       "Ref": "ResourseIdentifier"
-    //     },
-    //     "Name" : "testOverrideResource",
-    //     "Scopes" : [ {
-    //       "ScopeDescription" : {
-    //         "Ref": "ScopeValue"
-    //       },
-    //       "ScopeName" : {
-    //         "Ref": "ScopeValue"
-    //       }
-    //     }
-    //      ],
-    //     "UserPoolId" : {
-    //       "Ref": "UserPool"
-    //     }
-    //   },
-
-    // });
 
     resources.addCfnResource({
       type:"AWS::Cognito::UserPoolResourceServer",
@@ -154,28 +207,6 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
       },
 
     },"testOverrideResourceServer");
-
-  //   const client = new cdk.CfnResource(resources.userPool.stack, "newClient", {
-  //     type: "AWS::Cognito::UserPoolClient",
-  //     properties: {
-  //       "UserPoolId": {
-  //         "Ref": "UserPool"
-  //       },
-  //       "ClientName": "testOverrideClient",
-  //       "RefreshTokenValidity": {
-  //         "Ref": "userpoolClientRefreshTokenValidity"
-  //       },
-  //       "TokenValidityUnits": {
-  //         "RefreshToken": "days"
-  //       },
-  //       "GenerateSecret" : true,
-  //       "AllowedOAuthFlows" : [ "client_credentials" ],
-  //       "SupportedIdentityProviders" : [ "COGNITO" ],
-  //       "AllowedOAuthScopes" : [ { 'Fn::Sub': '${ResourseIdentifier}/${ScopeValue}' }, ],
-  //        "ExplicitAuthFlows" : [ "ALLOW_REFRESH_TOKEN_AUTH" ],
-  //        "AllowedOAuthFlowsUserPoolClient" : true,
-  //     }
-  // }).addDependsOn(testOverrideResourceServer);
 
 
     resources.addCfnResource({

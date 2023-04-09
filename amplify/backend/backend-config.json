@@ -87,6 +87,22 @@
           "resourceName": "CommentsLambda"
         }
       ]
+    },
+    "AMPLIFY_function_createuserfunction_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "createuserfunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_createuserfunction_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "createuserfunction"
+        }
+      ]
     }
   }
 }
