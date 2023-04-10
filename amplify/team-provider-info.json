@@ -16,11 +16,15 @@
       "function": {
         "CommentsLambda": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
-          "s3Key": "amplify-builds/CommentsLambda-30583632365077387264-build.zip"
+          "s3Key": "amplify-builds/CommentsLambda-6a7a5131674675756f6e-build.zip"
         },
         "createuserfunction": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
-          "s3Key": "amplify-builds/createuserfunction-71536977693851697448-build.zip"
+          "s3Key": "amplify-builds/createuserfunction-66476f30392f392f2f75-build.zip"
+        },
+        "AdminQueriesa01158f8": {
+          "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
+          "s3Key": "amplify-builds/AdminQueriesa01158f8-67734e6d6a6f30682f46-build.zip"
         }
       },
       "auth": {
@@ -28,7 +32,8 @@
         "userPoolGroups": {}
       },
       "api": {
-        "newAppApi": {}
+        "newAppApi": {},
+        "AdminQueries": {}
       },
       "storage": {
         "testStorage": {}

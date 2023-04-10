@@ -1,5 +1,27 @@
 {
   "api": {
+    "AdminQueries": {
+      "authorizationType": "AMAZON_COGNITO_USER_POOLS",
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "newapp"
+        },
+        {
+          "attributes": [
+            "Arn",
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "AdminQueriesa01158f8"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "newAppApi": {
       "dependsOn": [
         {
@@ -80,6 +102,20 @@
     }
   },
   "function": {
+    "AdminQueriesa01158f8": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "newapp"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "CommentsLambda": {
       "build": true,
       "dependsOn": [],
@@ -102,6 +138,22 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_AdminQueriesa01158f8_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriesa01158f8"
+        }
+      ]
+    },
+    "AMPLIFY_function_AdminQueriesa01158f8_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriesa01158f8"
+        }
+      ]
+    },
     "AMPLIFY_function_CommentsLambda_deploymentBucketName": {
       "usedBy": [
         {

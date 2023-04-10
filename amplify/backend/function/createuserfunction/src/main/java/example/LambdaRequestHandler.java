@@ -46,7 +46,10 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
 
         try {
             if (input.getHttpMethod().equalsIgnoreCase("POST")){
-                JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                String jsonString = gson.toJson(input.getRequestContext().getAuthorizer().get("claims"));
+                JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
+                if(obj.has("cognito:groups") && obj.get("cognito:groups").getAsString().contains("admin")){
+                    JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
                 String greetingString = String.format("Hello %s with email %s and from group %s", 
                                                 inputObj.get("username").getAsString(), 
                                                 inputObj.get("email").getAsString(), 
@@ -76,9 +79,11 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                 
                 logger.log(gson.toJson(addToGroupResponse.sdkHttpResponse()));
 
-            return response.withBody(greetingString+
-                                    " createuserResponse "+createuserResponse.user().userStatusAsString())
-                                    .withHeaders(headers).withStatusCode(200);
+                return response.withBody(greetingString+
+                                        " createuserResponse "+createuserResponse.user().userStatusAsString())
+                                        .withHeaders(headers).withStatusCode(200);
+                }
+             return response.withBody("Unautherized access").withHeaders(headers).withStatusCode(500);
             } else {
                 return response.withBody("Wrong Http Method").withHeaders(headers).withStatusCode(404);
             }
@@ -87,4 +92,5 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
             return response.withBody("Error: "+e).withHeaders(headers).withStatusCode(500);
         }  
     }
+   
 }

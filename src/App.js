@@ -186,7 +186,7 @@ function App({ signOut, user }) {
       }
     };
     try {
-        const response = await API.post(apiName, path, myInit);
+        const response = await API.put(apiName, path, myInit);
         console.log(response);
         setResponseVal(response.key);
     } catch (error) {
