@@ -21,6 +21,9 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     "ResourseIdentifier",
   );
 
+
+//resoursce for cognito admin group poc
+
   // resources.addCfnResource({
   //   type:"AWS::IAM::Policy",
   //   properties:{
@@ -38,119 +41,115 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
   //       ]
   //     },
   //     "Roles": [ {
-  //       "Ref": "cognito-group-admin-role"
+  //       "Ref": "CognitoGroupAdminRole"
   //    } ]
   //   }
   // },"cognitogroupadminpolicy");
 
 
-  //resoursce for cognito admin group poc 
+   
 
-  resources.addCfnResource({
-    type:"AWS::IAM::Role",
-    properties:{
-      "RoleName" : resources.userPool.userPoolName+"-group-admin-role",
-      "AssumeRolePolicyDocument" : {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "Federated": "cognito-identity.amazonaws.com"
-                },
-                "Action": "sts:AssumeRoleWithWebIdentity",
-                "Condition": {
-                    "StringEquals": {
-                        "cognito-identity.amazonaws.com:aud": resources.identityPool.ref
-                    },
-                    "ForAnyValue:StringLike": {
-                        "cognito-identity.amazonaws.com:amr": "authenticated"
-                    }
-                }
-            }
-        ]
-    },
-      "Policies" : [
-        {
-          "PolicyName" : resources.userPool.userPoolName+"-group-admin-policy",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                      "cognito-idp:ListGroups",
-                      "cognito-idp:ListUsers",
-                      "cognito-idp:AdminDeleteUser"
-                    ],
-                    "Resource": resources.userPool.attrArn
-                }
-              //   ,
-              //   {
-              //     "Action": [
-              //         "s3:DeleteObject",
-              //         "s3:PutObject",
-              //         "s3:PutObjectAcl",
-              //         "s3:GetObject"
-              //     ],
-              //     "Resource": [
+  // resources.addCfnResource({
+  //   type:"AWS::IAM::Role",
+  //   properties:{
+  //     "RoleName" : resources.userPool.userPoolName+"-group-admin-role",
+  //     "AssumeRolePolicyDocument" : {
+  //       "Version": "2012-10-17",
+  //       "Statement": [
+  //           {
+  //               "Effect": "Allow",
+  //               "Principal": {
+  //                   "Federated": "cognito-identity.amazonaws.com"
+  //               },
+  //               "Action": "sts:AssumeRoleWithWebIdentity",
+  //               "Condition": {
+  //                   "StringEquals": {
+  //                       "cognito-identity.amazonaws.com:aud": resources.identityPool.ref
+  //                   },
+  //                   "ForAnyValue:StringLike": {
+  //                       "cognito-identity.amazonaws.com:amr": "authenticated"
+  //                   }
+  //               }
+  //           }
+  //       ]
+  //   },
+  //     // "Policies" : [
+  //     //   {
+  //     //     "PolicyName" : resources.userPool.userPoolName+"-group-admin-policy",
+  //     //     "PolicyDocument": {
+  //     //       "Version": "2012-10-17",
+  //     //       "Statement": [
+  //     //           {
+  //     //               "Effect": "Allow",
+  //     //               "Action": [
+  //     //                 "cognito-idp:ListGroups",
+  //     //                 "cognito-idp:ListUsers",
+  //     //                 "cognito-idp:AdminDeleteUser"
+  //     //               ],
+  //     //               "Resource": resources.userPool.attrArn
+  //     //           }
+  //     //         //   ,
+  //     //         //   {
+  //     //         //     "Action": [
+  //     //         //         "s3:DeleteObject",
+  //     //         //         "s3:PutObject",
+  //     //         //         "s3:PutObjectAcl",
+  //     //         //         "s3:GetObject"
+  //     //         //     ],
+  //     //         //     "Resource": [
                       
-              //     ],
-              //     "Effect": "Allow"
-              // }
-            ]
-          }
-        }
-      ]
-    }
-  },"CognitoGroupAdminRole");
+  //     //         //     ],
+  //     //         //     "Effect": "Allow"
+  //     //         // }
+  //     //       ]
+  //     //     }
+  //     //   }
+  //     // ]
+  //   }
+  // },"CognitoGroupAdminRole");
 
 
-  // resources.addCfnOutput({
-  //   value: {"Fn::GetAtt" : ["CognitoGroupAdminRole", "Arn"] }
-  // },"CognitoGroupAdminRoleArn");
-
-  resources.addCfnResource({
-    type:"AWS::Cognito::UserPoolGroup",
-    properties:{
-      "UserPoolId": resources.userPool.ref,
-      "GroupName" : "admin-group",
-      // "Precedence" : 0,
-      "RoleArn" : {"Fn::GetAtt" : ["CognitoGroupAdminRole", "Arn"] }
-    }
-  },"CognitoAdminGroup");
+  // resources.addCfnResource({
+  //   type:"AWS::Cognito::UserPoolGroup",
+  //   properties:{
+  //     "UserPoolId": resources.userPool.ref,
+  //     "GroupName" : "admin-group",
+  //     // "Precedence" : 0,
+  //     "RoleArn" : {"Fn::GetAtt" : ["CognitoGroupAdminRole", "Arn"] }
+  //   }
+  // },"CognitoAdminGroup");
 
 
-  resources.addCfnResource({
-    type:"AWS::Cognito::UserPoolUser",
-    properties:{
-      "UserPoolId": resources.userPool.ref,
-      "DesiredDeliveryMediums" : [ "EMAIL" ],
-      // "ForceAliasCreation" : Boolean,
-      // "MessageAction" : "RESEND",
-      "UserAttributes" : [ 
-        {
-          "Name" : "email",
-          "Value" : "quappelledaxi-6839@yopmail.com"
-        },
-        {
-          "Name" : "email_verified",
-          "Value" : "true"
-        }
-      ],
-      "Username" : "OrgAdmin"
-    }
-  },"OrgAdmin");
+  // resources.addCfnResource({
+  //   type:"AWS::Cognito::UserPoolUser",
+  //   properties:{
+  //     "UserPoolId": resources.userPool.ref,
+  //     "DesiredDeliveryMediums" : [ "EMAIL" ],
+  //     // "ForceAliasCreation" : Boolean,
+  //     // "MessageAction" : "RESEND",
+  //     "UserAttributes" : [ 
+  //       {
+  //         "Name" : "email",
+  //         "Value" : "quappelledaxi-6839@yopmail.com"
+  //       },
+  //       {
+  //         "Name" : "email_verified",
+  //         "Value" : "true"
+  //       }
+  //     ],
+  //     "Username" : "OrgAdmin"
+  //   }
+  // },"OrgAdmin");
 
 
-  resources.addCfnResource({
-    type:"AWS::Cognito::UserPoolUserToGroupAttachment",
-    properties:{
-      "GroupName" : { "Ref" : "CognitoAdminGroup" },
-      "Username" : { "Ref" : "OrgAdmin" },
-      "UserPoolId" : resources.userPool.ref
-    }
-  },"usertogroupattachement");
+  // resources.addCfnResource({
+  //   type:"AWS::Cognito::UserPoolUserToGroupAttachment",
+  //   properties:{
+  //     "GroupName" : { "Ref" : "CognitoAdminGroup" },
+  //     "Username" : { "Ref" : "OrgAdmin" },
+  //     "UserPoolId" : resources.userPool.ref
+  //   }
+  // },"usertogroupattachement");
 
 
 
@@ -164,8 +163,6 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     }
     // "UnusedAccountValidityDays" : Integer
   });
-  // resources.userPool.addPropertyOverride("EmailVerificationSubject","Your verification code");
-  // resources.userPool.addPropertyOverride("EmailVerificationMessage","Your verification code for project app {####}");
   resources.userPool.addPropertyOverride("VerificationMessageTemplate",{
     "DefaultEmailOption" : "CONFIRM_WITH_CODE",
     "EmailMessage" : "Your verification code for project app {####}",
@@ -174,7 +171,9 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     // "EmailSubjectByLink" : String,
     // "SmsMessage" : String
   });
-    
+   
+  
+  // to get prefered group role aws credentials
   resources.identityPoolRoleMap.addPropertyOverride("RoleMappings",{
    "cognitoGroupRoleMappingWebClient" : {
         "Type": "Token",
@@ -187,7 +186,6 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
         "IdentityProvider" : { "Fn::Join" : [ ":", [ resources.userPool.attrProviderName, resources.userPoolClient.ref ] ] }
       }
   });
-  // resources.identityPoolRoleMap.addPropertyOverride("AmbiguousRoleResolution","AuthenticatedRole");
 
 
   // resourses for client secreat poc

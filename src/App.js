@@ -53,6 +53,7 @@ function App({ signOut, user }) {
   const abs = envVar[process.env.REACT_APP_DEPLOYMENT_ENV];
   const [responseVal, setResponseVal] = useState(""); 
   const [groups, setGroups] = useState([]);
+  const [newUser, setNewUser] = useState({username:"",email:"",group:""});
   const [fileName, setfileName] = useState();
   const [signedURL, setsignedURL] = useState();
   const [isUrlAvailable, setisUrlAvailable] = useState(false); 
@@ -177,11 +178,7 @@ function App({ signOut, user }) {
     const apiName = "newAppApi";
     const path = '/create-user';
     const myInit = {
-        body:{
-          "username": "NewUser",
-          "email": "zinaufumofru-5404@yopmail.com" ,
-          "group": "admin-group"
-        },
+        body:newUser,
         headers: {
         Authorization: `Bearer ${(await Auth.currentSession())
           .getIdToken()
@@ -191,7 +188,7 @@ function App({ signOut, user }) {
     try {
         const response = await API.post(apiName, path, myInit);
         console.log(response);
-        setResponseVal(response);
+        setResponseVal(response.key);
     } catch (error) {
         console.log(error);
     }
@@ -220,19 +217,17 @@ function App({ signOut, user }) {
     async function onChange(e) {
       const file = e.target.files[0];
       try {
-        await Storage.put(file.name, file 
+        const response = await Storage.put(file.name, file 
         //   {
         //   contentType: "image/png", // contentType is optional
         // }
         );
-        console.log(file.name);
+        console.log(response);
+        setfileName(file.name);
       } catch (error) {
         console.log("Error uploading file: ", error);
       }
     }
-    function handleChange(e){
-      setfileName(e.target.value);
-      }
 
       async function getLink(){
         const signedURL = await Storage.get(fileName);
@@ -248,21 +243,21 @@ function App({ signOut, user }) {
       <p>{process.env.REACT_APP_ID}</p>
       <p>{abs.somting}</p>
       <p>{abs.dothing}</p>
-      <p>
-      <input type="file" onChange={onChange} />
-      </p>
-      <p><input onChange={handleChange}
-                  name="file"
-                  placeholder="file name"
-                  value={fileName}
+      <p><input onChange={(e)=>{setNewUser({...newUser, username:e.target.value})}}
+                  name="user Name"
+                  placeholder="user name"
+                  value={newUser.username}
                   /></p>
-      {isUrlAvailable && (<p><a href={signedURL} target="_blank" rel='noreferrer'>{fileName}</a></p>)}
-      <p><button
-            type="button"
-            className=""
-            onClick={getLink}>
-                get download link
-            </button></p>
+      <p><input onChange={(e)=>{setNewUser({...newUser, email:e.target.value})}}
+                  name="email"
+                  placeholder="email"
+                  value={newUser.email}
+                  /></p>
+      <p><input onChange={(e)=>{setNewUser({...newUser, group:e.target.value})}}
+                  name="group"
+                  placeholder="cognito group name"
+                  value={newUser.group}
+                  /></p>
       <button
             type="button"
             className=""
@@ -290,8 +285,24 @@ function App({ signOut, user }) {
             <button onClick={signOut}>Sign out</button>
             <p>{responseVal}</p>
             {groups && groups.map((item, index)=>(
-              <p key={index}>{item.GroupName}</p>
+              <p key={index}  onClick={()=>{setNewUser({...newUser, group:item.GroupName})}} >{item.GroupName}</p>
             ))}
+
+      <p>
+      <input type="file" onChange={onChange} />
+      </p>
+      <p><input onChange={(e)=>{setfileName(e.target.value);}}
+                  name="file"
+                  placeholder="file name"
+                  value={fileName}
+                  /></p>
+      {isUrlAvailable && (<p><a href={signedURL} target="_blank" rel='noreferrer'>{fileName}</a></p>)}
+      <p><button
+            type="button"
+            className=""
+            onClick={getLink}>
+                get download link
+            </button></p>
     </div>
   );
 }

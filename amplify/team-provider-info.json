@@ -24,7 +24,8 @@
         }
       },
       "auth": {
-        "newapp": {}
+        "newapp": {},
+        "userPoolGroups": {}
       },
       "api": {
         "newAppApi": {}
