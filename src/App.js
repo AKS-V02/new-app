@@ -54,9 +54,10 @@ function App({ signOut, user }) {
   const [responseVal, setResponseVal] = useState(""); 
   const [groups, setGroups] = useState([]);
   const [newUser, setNewUser] = useState({username:"",email:"",group:""});
-  const [fileName, setfileName] = useState();
-  const [signedURL, setsignedURL] = useState();
-  const [isUrlAvailable, setisUrlAvailable] = useState(false); 
+  const [fileName, setfileName] = useState("");
+  const [signedURL, setsignedURL] = useState("");
+  const [isUrlAvailable, setisUrlAvailable] = useState(false);
+  // const [isValid, setisValid] = useState(false); 
 
 
 
@@ -217,13 +218,24 @@ function App({ signOut, user }) {
     async function onChange(e) {
       const file = e.target.files[0];
       try {
-        const response = await Storage.put(file.name, file 
-        //   {
-        //   contentType: "image/png", // contentType is optional
-        // }
-        );
-        console.log(response);
-        setfileName(file.name);
+        const isVali = await validateCsv(file);
+        if(isVali){
+          const response = await Storage.put(file.name, file ,{
+            progressCallback(progress) {
+              console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+            }
+          }
+          //   {
+          //   contentType: "image/png", // contentType is optional
+          // }
+          );
+          console.log(response);
+          console.log("valid file")
+          setfileName(file.name);
+        } else {
+          console.log("not a valid file");
+          setfileName("");
+        }
       } catch (error) {
         console.log("Error uploading file: ", error);
       }
@@ -233,6 +245,66 @@ function App({ signOut, user }) {
         const signedURL = await Storage.get(fileName);
         setisUrlAvailable(true);
         setsignedURL(signedURL);
+      }
+
+      async function deleteObject(){
+        const response = await Storage.remove(fileName);
+        console.log(response);
+        setisUrlAvailable(false);
+        setsignedURL("");
+      }
+
+      async function validateCsv(file){
+        return new Promise((resolve, reject)=>{
+            if(!file || !(file && ["text/csv"].includes(file.type))){
+              console.log("file not found");
+              resolve(false);
+            }else{
+                var reader = new FileReader();
+                reader.readAsText(file);
+                reader.onload = function(e){
+                  var data = e.target.result;
+                  console.log(data);
+                  //invalid char check 
+                  const regexInvalidchar = new RegExp('[$^<>`]','gm')
+                  // var res = data.match(regexInvalidchar);
+                  // console.log(res);
+                  if(regexInvalidchar.test(data)){
+                    console.log("invalid character found");
+                    resolve(false);
+                    return;
+                  } else{
+                    // dublicate recorde check
+                    const comaNum = data.slice(0,data.indexOf('\n')).match(/[,]/g).length
+                    const regexReplaceEmptyRow = new RegExp('[ ,\r]|\n,{'+comaNum+'}|\n$','gm'); 
+                    var rowData = data.toLowerCase().replace(regexReplaceEmptyRow,'').split("\n");
+                    var checkList = rowData;
+                    var lastelement = "";
+                    console.log(rowData);
+                    for(var row = 1; row < rowData.length; row++){
+                        lastelement = checkList.pop();
+                        console.log(lastelement);
+                        if(checkList.includes(lastelement)){
+                          console.log("dublicate recorde found");
+                          resolve(false);
+                          return;
+                        } else if(checkList.length<=2){
+                          console.log("valid recordes");
+                          resolve(true);
+                          return;
+                        }
+                    }
+                  }
+                }
+                
+                reader.onerror = function(e){
+                  reject(e.target.error.name);
+                }
+            }
+            
+      })
+        // console.log(reader);
+        // return isValid;
       }
 
   return (
@@ -289,20 +361,27 @@ function App({ signOut, user }) {
             ))}
 
       <p>
-      <input type="file" onChange={onChange} />
+      <input type="file" onChange={onChange} accept=".csv,text/csv" />
       </p>
       <p><input onChange={(e)=>{setfileName(e.target.value);}}
                   name="file"
                   placeholder="file name"
                   value={fileName}
                   /></p>
-      {isUrlAvailable && (<p><a href={signedURL} target="_blank" rel='noreferrer'>{fileName}</a></p>)}
+      {isUrlAvailable && (<p><a href={signedURL} target="_blank" onClick={()=>{setisUrlAvailable(false);}} rel='noreferrer'>{fileName}</a></p>)}
       <p><button
             type="button"
             className=""
             onClick={getLink}>
                 get download link
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={deleteObject}>
+                delete file
             </button></p>
+        
     </div>
   );
 }
