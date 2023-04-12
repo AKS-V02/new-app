@@ -218,18 +218,19 @@ function App({ signOut, user }) {
     async function onChange(e) {
       const file = e.target.files[0];
       try {
-        const isVali = await validateCsv(file);
+       const isVali = await validateCsv(file);
+        // const isVali = true;
         if(isVali){
-          const response = await Storage.put(file.name, file ,{
-            progressCallback(progress) {
-              console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
-            }
-          }
-          //   {
-          //   contentType: "image/png", // contentType is optional
+          // const response = await Storage.put(file.name, file ,{
+          //   progressCallback(progress) {
+          //     console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+          //   }
           // }
-          );
-          console.log(response);
+          // //   {
+          // //   contentType: "image/png", // contentType is optional
+          // // }
+          // );
+          // console.log(response);
           console.log("valid file")
           setfileName(file.name);
         } else {
@@ -278,17 +279,17 @@ function App({ signOut, user }) {
                     const comaNum = data.slice(0,data.indexOf('\n')).match(/[,]/g).length
                     const regexReplaceEmptyRow = new RegExp('[ ,\r]|\n,{'+comaNum+'}|\n$','gm'); 
                     var rowData = data.toLowerCase().replace(regexReplaceEmptyRow,'').split("\n");
-                    var checkList = rowData;
+                    const rowNum = rowData.length;
                     var lastelement = "";
                     console.log(rowData);
-                    for(var row = 1; row < rowData.length; row++){
-                        lastelement = checkList.pop();
+                    for(var row = 1; row < rowNum; row++){
+                        lastelement = rowData.pop();
                         console.log(lastelement);
-                        if(checkList.includes(lastelement)){
+                        if(rowData.includes(lastelement)){
                           console.log("dublicate recorde found");
                           resolve(false);
                           return;
-                        } else if(checkList.length<=2){
+                        } else if(rowData.length<=2){
                           console.log("valid recordes");
                           resolve(true);
                           return;
@@ -302,9 +303,7 @@ function App({ signOut, user }) {
                 }
             }
             
-      })
-        // console.log(reader);
-        // return isValid;
+        })
       }
 
   return (
