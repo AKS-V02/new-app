@@ -218,7 +218,7 @@ function App({ signOut, user }) {
     async function onChange(e) {
       const file = e.target.files[0];
       try {
-       const isVali = await validateCsv(file);
+       const isVali = await validateCsv(file, "name, value, age, product, to address, from address", "name");
         // const isVali = true;
         if(isVali){
           // const response = await Storage.put(file.name, file ,{
@@ -255,10 +255,15 @@ function App({ signOut, user }) {
         setsignedURL("");
       }
 
-      async function validateCsv(file){
+      async function validateCsv(file, commaSeperateColNames, uniqColumName){
+        console.log(file);
         return new Promise((resolve, reject)=>{
             if(!file || !(file && ["text/csv"].includes(file.type))){
               console.log("file not found");
+              resolve(false);
+            } else if(file.size>(20*1024*1024)){ // max file size 20 MB
+              console.log(file.size);
+              console.log("file Size exceded");
               resolve(false);
             }else{
                 var reader = new FileReader();
@@ -275,26 +280,43 @@ function App({ signOut, user }) {
                     resolve(false);
                     return;
                   } else{
-                    // dublicate recorde check
                     const comaNum = data.slice(0,data.indexOf('\n')).match(/[,]/g).length
-                    const regexReplaceEmptyRow = new RegExp('[ ,\r]|\n,{'+comaNum+'}|\n$','gm'); 
+                    const regexReplaceEmptyRow = new RegExp('[ \r]|\n,{'+comaNum+'}|\n$','gm'); 
                     var rowData = data.toLowerCase().replace(regexReplaceEmptyRow,'').split("\n");
-                    const rowNum = rowData.length;
-                    var lastelement = "";
-                    console.log(rowData);
-                    for(var row = 1; row < rowNum; row++){
-                        lastelement = rowData.pop();
-                        console.log(lastelement);
-                        if(rowData.includes(lastelement)){
-                          console.log("dublicate recorde found");
-                          resolve(false);
-                          return;
-                        } else if(rowData.length<=2){
-                          console.log("valid recordes");
-                          resolve(true);
-                          return;
-                        }
+                    // Header Formate Check
+                    if(!commaSeperateColNames.toLowerCase().replace(/[ ]/g,'').includes(rowData[0])){
+                      console.log("Csv File Hedder Is Not Correct");
+                      resolve(false);
+                      return;
                     }
+                    // dublicate recorde check
+                    var checkList = [];
+                    const colNum = rowData[0].split(",").indexOf(uniqColumName);
+                    const totalRowNum = rowData.length;
+                    // var lastelement = "";
+                    console.log(rowData);
+                    for(var row = 1; row < totalRowNum; row++){
+                        // lastelement = rowData.pop();
+                        // console.log(lastelement);
+                        // if(rowData.includes(lastelement)){
+                        //   console.log("dublicate recorde found at"+rowData.indexOf(lastelement));
+                        //   resolve(false);
+                        //   return;
+                        // } else if(rowData.length<=2){
+                        //   console.log("valid recordes");
+                        //   resolve(true);
+                        //   return;
+                        // }
+                        if(checkList.includes(rowData[colNum])){
+                            console.log("dublicate recorde found at"+row);
+                            resolve(false);
+                            return;
+                          }
+                          checkList.push(rowData[colNum]);
+                    }
+                    console.log("valid recordes");
+                    resolve(true);
+                    return;
                   }
                 }
                 
