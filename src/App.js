@@ -221,16 +221,16 @@ function App({ signOut, user }) {
        const isVali = await validateCsv(file, "name, value, age, product, to address, from address", "name");
         // const isVali = true;
         if(isVali){
-          // const response = await Storage.put(file.name, file ,{
-          //   progressCallback(progress) {
-          //     console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
-          //   }
+          const response = await Storage.put(file.name, file ,{
+            progressCallback(progress) {
+              console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+            }
+          }
+          //   {
+          //   contentType: "image/png", // contentType is optional
           // }
-          // //   {
-          // //   contentType: "image/png", // contentType is optional
-          // // }
-          // );
-          // console.log(response);
+          );
+          console.log(response);
           console.log("valid file")
           setfileName(file.name);
         } else {
