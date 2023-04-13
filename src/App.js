@@ -57,7 +57,7 @@ function App({ signOut, user }) {
   const [fileName, setfileName] = useState("");
   const [signedURL, setsignedURL] = useState("");
   const [isUrlAvailable, setisUrlAvailable] = useState(false);
-  // const [isValid, setisValid] = useState(false); 
+  const [uploadeMassage, setUploadeMassage] = useState(""); 
 
 
 
@@ -187,7 +187,7 @@ function App({ signOut, user }) {
       }
     };
     try {
-        const response = await API.put(apiName, path, myInit);
+        const response = await API.post(apiName, path, myInit);
         console.log(response);
         setResponseVal(response.key);
     } catch (error) {
@@ -231,12 +231,13 @@ function App({ signOut, user }) {
           // }
           );
           console.log(response);
-          console.log("valid file")
+          console.log("valid file");
           setfileName(file.name);
         } else {
           console.log("not a valid file");
           setfileName("");
         }
+        document.querySelector("input[type=file]").value = ""
       } catch (error) {
         console.log("Error uploading file: ", error);
       }
@@ -260,10 +261,12 @@ function App({ signOut, user }) {
         return new Promise((resolve, reject)=>{
             if(!file || !(file && ["text/csv"].includes(file.type))){
               console.log("file not found");
+              setUploadeMassage('Valid file not found');
               resolve(false);
             } else if(file.size>(20*1024*1024)){ // max file size 20 MB
               console.log(file.size);
               console.log("file Size exceded");
+              setUploadeMassage('File Size exceded 20 MB');
               resolve(false);
             }else{
                 var reader = new FileReader();
@@ -277,6 +280,7 @@ function App({ signOut, user }) {
                   // console.log(res);
                   if(regexInvalidchar.test(data)){
                     console.log("invalid character found");
+                    setUploadeMassage('Invalid character $^<>` found');
                     resolve(false);
                     return;
                   } else{
@@ -286,6 +290,7 @@ function App({ signOut, user }) {
                     // Header Formate Check
                     if(!commaSeperateColNames.toLowerCase().replace(/[ ]/g,'').includes(rowData[0])){
                       console.log("Csv File Hedder Is Not Correct");
+                      setUploadeMassage('Csv File Hedder Is Not Correct it should be '+commaSeperateColNames);
                       resolve(false);
                       return;
                     }
@@ -307,14 +312,17 @@ function App({ signOut, user }) {
                         //   resolve(true);
                         //   return;
                         // }
-                        if(checkList.includes(rowData[colNum])){
+                        var colVal = rowData[row].split(",")[colNum];
+                        if(checkList.includes(colVal)){
                             console.log("dublicate recorde found at"+row);
+                            setUploadeMassage("Dublicate recorde found at row "+row+" for unique column '"+uniqColumName+"'");
                             resolve(false);
                             return;
                           }
-                          checkList.push(rowData[colNum]);
+                          checkList.push(colVal);
                     }
                     console.log("valid recordes");
+                    setUploadeMassage('Valid File');
                     resolve(true);
                     return;
                   }
@@ -375,15 +383,16 @@ function App({ signOut, user }) {
             onClick={listGroup}>
                 list group
             </button>
-            <button onClick={signOut}>Sign out</button>
+            <button  type="button" onClick={signOut}>Sign out</button>
             <p>{responseVal}</p>
             {groups && groups.map((item, index)=>(
               <p key={index}  onClick={()=>{setNewUser({...newUser, group:item.GroupName})}} >{item.GroupName}</p>
             ))}
 
       <p>
-      <input type="file" onChange={onChange} accept=".csv,text/csv" />
+      <input title='csvFile' type="file" onChange={onChange} accept=".csv,text/csv" />
       </p>
+      {uploadeMassage && (<p>{uploadeMassage}</p>)}
       <p><input onChange={(e)=>{setfileName(e.target.value);}}
                   name="file"
                   placeholder="file name"

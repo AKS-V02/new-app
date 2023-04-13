@@ -225,6 +225,24 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     },"testOverrideResourceServer");
 
 
+    resources.userPoolClientWeb.addPropertyOverride("TokenValidityUnits",{
+      "AccessToken" : "minutes",
+      "IdToken" : "minutes",
+      "RefreshToken": "minutes"
+    });
+    resources.userPoolClientWeb.addPropertyOverride("AccessTokenValidity",30);
+    resources.userPoolClientWeb.addPropertyOverride("IdTokenValidity",30);
+    resources.userPoolClientWeb.addPropertyOverride("RefreshTokenValidity",60);
+
+    resources.userPoolClient.addPropertyOverride("TokenValidityUnits",{
+      "AccessToken" : "minutes",
+      "IdToken" : "minutes",
+      "RefreshToken": "minutes"
+    });
+    resources.userPoolClient.addPropertyOverride("AccessTokenValidity",30);
+    resources.userPoolClient.addPropertyOverride("IdTokenValidity",30);
+    resources.userPoolClient.addPropertyOverride("RefreshTokenValidity",60);
+
     resources.addCfnResource({
         type: "AWS::Cognito::UserPoolClient",
         properties: {
@@ -232,11 +250,13 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
             "Ref": "UserPool"
           },
           "ClientName": "testOverrideClient",
-          "RefreshTokenValidity": {
-            "Ref": "userpoolClientRefreshTokenValidity"
-          },
+          "AccessTokenValidity" : 30,
+          "IdTokenValidity" : 30,
+          "RefreshTokenValidity": 60,
           "TokenValidityUnits": {
-            "RefreshToken": "days"
+            "AccessToken" : "minutes",
+            "IdToken" : "minutes",
+            "RefreshToken": "minutes"
           },
           "GenerateSecret" : true,
           "AllowedOAuthFlows" : [ "client_credentials" ],
