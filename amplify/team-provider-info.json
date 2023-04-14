@@ -10,7 +10,8 @@
       "StackName": "amplify-newapp-dev-172655",
       "StackId": "arn:aws:cloudformation:ap-south-1:873693938287:stack/amplify-newapp-dev-172655/057b7420-b2a8-11ed-b7c2-068a777efea6",
       "AmplifyAppId": "d32zgct1owie8d",
-      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-newapp-dev-172655-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-newapp-dev-172655-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-newapp-dev-172655-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
     },
     "categories": {
       "function": {
@@ -25,6 +26,11 @@
         "AdminQueriesa01158f8": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
           "s3Key": "amplify-builds/AdminQueriesa01158f8-67734e6d6a6f30682f46-build.zip"
+        },
+        "newappPostConfirmation": {
+          "GROUP": "newgroup",
+          "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
+          "s3Key": "amplify-builds/newappPostConfirmation-77783968656a57426f49-build.zip"
         }
       },
       "auth": {

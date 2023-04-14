@@ -61,7 +61,17 @@
   },
   "auth": {
     "newapp": {
-      "dependsOn": [],
+      "dependsOn": [
+        {
+          "attributes": [
+            "Arn",
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "newappPostConfirmation",
+          "triggerProvider": "Cognito"
+        }
+      ],
       "frontendAuthConfig": {
         "mfaConfiguration": "OFF",
         "mfaTypes": [
@@ -135,6 +145,11 @@
       ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "newappPostConfirmation": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     }
   },
   "parameters": {
@@ -183,6 +198,30 @@
         {
           "category": "function",
           "resourceName": "createuserfunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostConfirmation_GROUP": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostConfirmation_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostConfirmation_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostConfirmation"
         }
       ]
     }
