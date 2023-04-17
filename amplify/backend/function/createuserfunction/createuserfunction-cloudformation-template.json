@@ -261,7 +261,8 @@
                 "cognito-idp:UpdateGroup",
                 "cognito-idp:AdminUpdateAuthEventFeedback",
                 "cognito-idp:UpdateDeviceStatus",
-                "cognito-idp:UpdateUserPool"
+                "cognito-idp:UpdateUserPool",
+                "cognito-idp:ListGroups"
               ],
               "Resource": [
                 {

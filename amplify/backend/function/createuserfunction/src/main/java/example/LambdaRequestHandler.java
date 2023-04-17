@@ -26,6 +26,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreate
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.DeliveryMediumType;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsResponse;
 
 public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>{   
     APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
@@ -49,39 +51,49 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                 String jsonString = gson.toJson(input.getRequestContext().getAuthorizer().get("claims"));
                 JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
                 if(obj.has("cognito:groups") && obj.get("cognito:groups").getAsString().contains("admin")){
-                    JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
-                String greetingString = String.format("Hello %s with email %s and from group %s", 
-                                                inputObj.get("username").getAsString(), 
-                                                inputObj.get("email").getAsString(), 
-                                                inputObj.get("group").getAsString());
-                logger.log(greetingString);
+                    if(input.getPath().contains("list-group")){
+                        ListGroupsResponse responseGroup = cognitoClient.listGroups(ListGroupsRequest.builder()
+                                                .userPoolId(userPoolId)
+                                                .limit(5)
+                                                .build());
+                        return response.withBody(gson.toJson(responseGroup.groups()))
+                                                .withHeaders(headers).withStatusCode(200);
+                    } else{
+                        JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                    String greetingString = String.format("Hello %s with email %s and from group %s", 
+                                                    inputObj.get("username").getAsString(), 
+                                                    inputObj.get("email").getAsString(), 
+                                                    inputObj.get("group").getAsString());
+                    logger.log(greetingString);
 
 
 
-                AdminCreateUserResponse createuserResponse = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
-                                                            .desiredDeliveryMediums(DeliveryMediumType.EMAIL)
-                                                            .userPoolId(userPoolId)
-                                                            .username(inputObj.get("username").getAsString())
-                                                            // .messageAction(MessageActionType.RESEND)
-                                                            .userAttributes(List.of(AttributeType.builder().name("email")
-                                                                                .value(inputObj.get("email").getAsString())
-                                                                                .build(),
-                                                                                AttributeType.builder().name("email_verified")
-                                                                                .value("true")
-                                                                                .build()))
-                                                            .build());
-                
-                AdminAddUserToGroupResponse addToGroupResponse = cognitoClient.adminAddUserToGroup(AdminAddUserToGroupRequest.builder()
-                                                                .groupName(inputObj.get("group").getAsString())
+                    AdminCreateUserResponse createuserResponse = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
+                                                                .desiredDeliveryMediums(DeliveryMediumType.EMAIL)
                                                                 .userPoolId(userPoolId)
-                                                                .username(createuserResponse.user().username())                    
+                                                                .username(inputObj.get("username").getAsString())
+                                                                // .messageAction(MessageActionType.RESEND)
+                                                                .userAttributes(List.of(AttributeType.builder().name("email")
+                                                                                    .value(inputObj.get("email").getAsString())
+                                                                                    .build(),
+                                                                                    AttributeType.builder().name("email_verified")
+                                                                                    .value("true")
+                                                                                    .build()))
                                                                 .build());
-                
-                logger.log(gson.toJson(addToGroupResponse.sdkHttpResponse()));
+                    
+                    AdminAddUserToGroupResponse addToGroupResponse = cognitoClient.adminAddUserToGroup(AdminAddUserToGroupRequest.builder()
+                                                                    .groupName(inputObj.get("group").getAsString())
+                                                                    .userPoolId(userPoolId)
+                                                                    .username(createuserResponse.user().username())                    
+                                                                    .build());
+                    
+                    logger.log(gson.toJson(addToGroupResponse.sdkHttpResponse()));
 
-                return response.withBody(greetingString+
-                                        " createuserResponse "+createuserResponse.user().userStatusAsString())
-                                        .withHeaders(headers).withStatusCode(200);
+                    return response.withBody(greetingString+
+                                            " createuserResponse "+createuserResponse.user().userStatusAsString())
+                                            .withHeaders(headers).withStatusCode(200);
+                    }
+                    
                 }
              return response.withBody("Unautherized access").withHeaders(headers).withStatusCode(500);
             } else {
