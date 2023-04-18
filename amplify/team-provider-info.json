@@ -21,7 +21,7 @@
         },
         "createuserfunction": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
-          "s3Key": "amplify-builds/createuserfunction-58677861755231797a2f-build.zip"
+          "s3Key": "amplify-builds/createuserfunction-70494b61634647477968-build.zip"
         },
         "AdminQueriesa01158f8": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",

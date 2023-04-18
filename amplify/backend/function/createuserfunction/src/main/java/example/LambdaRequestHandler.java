@@ -6,6 +6,7 @@ Amplify Params - DO NOT EDIT */
 
 package example;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreate
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.DeliveryMediumType;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.GroupType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsResponse;
 
@@ -56,17 +58,21 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                                 .userPoolId(userPoolId)
                                                 .limit(5)
                                                 .build());
-                        return response.withBody(gson.toJson(responseGroup.groups()))
+                        logger.log(gson.toJson(responseGroup.groups()));
+                        List<String> groupList = new ArrayList<>();
+                        for( GroupType group : responseGroup.groups()){
+                            groupList.add(group.groupName());
+                        }
+                        return response.withBody(gson.toJson(groupList))
                                                 .withHeaders(headers).withStatusCode(200);
-                    } else{
-                        JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                    } else {
+                    JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
                     String greetingString = String.format("Hello %s with email %s and from group %s", 
                                                     inputObj.get("username").getAsString(), 
                                                     inputObj.get("email").getAsString(), 
+                                                    inputObj.get("phone_number").getAsString(),
                                                     inputObj.get("group").getAsString());
                     logger.log(greetingString);
-
-
 
                     AdminCreateUserResponse createuserResponse = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
                                                                 .desiredDeliveryMediums(DeliveryMediumType.EMAIL)
@@ -78,6 +84,9 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                                                                     .build(),
                                                                                     AttributeType.builder().name("email_verified")
                                                                                     .value("true")
+                                                                                    .build(),
+                                                                                     AttributeType.builder().name("phone_number")
+                                                                                    .value(inputObj.get("phone_number").getAsString())
                                                                                     .build()))
                                                                 .build());
                     
@@ -93,7 +102,6 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                             " createuserResponse "+createuserResponse.user().userStatusAsString())
                                             .withHeaders(headers).withStatusCode(200);
                     }
-                    
                 }
              return response.withBody("Unautherized access").withHeaders(headers).withStatusCode(500);
             } else {
