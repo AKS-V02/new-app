@@ -231,6 +231,51 @@ function App({ signOut, user }) {
 
     }
 
+    async function listUser(){
+      const apiName = "newAppApi";
+      const path = '/create-user/list-user';
+      const myInit = {
+          body:{
+            // "filterByEmail":"qua",
+            // "paginationToken":""
+          },
+          headers: {
+          Authorization: `Bearer ${(await Auth.currentSession())
+            .getIdToken()
+            .getJwtToken()}`
+        }
+      };
+      try {
+          const response = await API.post(apiName, path, myInit);
+          console.log(response);
+      } catch (error) {
+          console.log(error);
+      }
+  
+      }
+    
+      async function resetUserPassword(){
+        const apiName = "newAppApi";
+        const path = '/create-user/reset-user-password';
+        const myInit = {
+            body:{
+              "userName": newUser.username
+            },
+            headers: {
+            Authorization: `Bearer ${(await Auth.currentSession())
+              .getIdToken()
+              .getJwtToken()}`
+          }
+        };
+        try {
+            const response = await API.post(apiName, path, myInit);
+            console.log(response);
+        } catch (error) {
+            console.log(error);
+        }
+    
+        }  
+
     async function onChange(e) {
       const file = e.target.files[0];
       try {
@@ -398,6 +443,18 @@ function App({ signOut, user }) {
             className=""
             onClick={listGroup}>
                 list group
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={listUser}>
+                list users
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={resetUserPassword}>
+                reset users password
             </button>
             <button  type="button" onClick={signOut}>Sign out</button>
             <p>{responseVal}</p>

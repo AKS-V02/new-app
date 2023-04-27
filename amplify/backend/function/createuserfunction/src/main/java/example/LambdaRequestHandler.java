@@ -25,11 +25,15 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUse
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUserToGroupResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminResetUserPasswordRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminResetUserPasswordResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.DeliveryMediumType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.GroupType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersResponse;
 
 public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>{   
     APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
@@ -65,6 +69,52 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                         }
                         return response.withBody(gson.toJson(groupList))
                                                 .withHeaders(headers).withStatusCode(200);
+                    }else if(input.getPath().contains("list-user")){
+                        JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                        ListUsersRequest req = null;
+                        if(inputObj.has("filterByEmail")){
+                            req = ListUsersRequest.builder()
+                                    .userPoolId(userPoolId)
+                                    // .attributesToGet(List.of("email", "name", "username", "address"))
+                                    .filter("email ^=\""+inputObj.get("filterByEmail").getAsString()+"\"")
+                                    .limit(20)
+                                    .build();
+                        } else if(inputObj.has("paginationToken")){
+                            req = ListUsersRequest.builder()
+                                    .userPoolId(userPoolId)
+                                    // .attributesToGet(List.of())
+                                    .paginationToken(inputObj.get("paginationToken").getAsString())
+                                    .limit(20)
+                                    .build();
+                        } else if (inputObj.has("filterByEmail") && inputObj.has("paginationToken")){
+                            req = ListUsersRequest.builder()
+                                    .userPoolId(userPoolId)
+                                    // .attributesToGet(List.of())
+                                    .filter("name ^=\""+inputObj.get("filterByEmail").getAsString()+"\"")
+                                    .paginationToken(inputObj.get("paginationToken").getAsString())
+                                    .limit(20)
+                                    .build();
+                        } else {
+                            req = ListUsersRequest.builder()
+                                    .userPoolId(userPoolId)
+                                    // .attributesToGet(List.of())
+                                    .limit(20)
+                                    .build();
+                        } 
+                        
+                        ListUsersResponse responseUsers = cognitoClient.listUsers(req);
+                        String paginationToken = responseUsers.paginationToken() != null ?responseUsers.paginationToken():"Null";
+                        return response.withBody(gson.toJson(Map.of("users",responseUsers.users()
+                                                        ,"paginationToken", paginationToken)))
+                                                .withHeaders(headers).withStatusCode(200);
+                    }else if(input.getPath().contains("reset-user-password")){
+                        JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                        AdminResetUserPasswordResponse resp = cognitoClient.adminResetUserPassword(AdminResetUserPasswordRequest.builder()
+                                                            .userPoolId(userPoolId)
+                                                            .username(inputObj.get("userName").getAsString())
+                                                            .build());
+                        return response.withBody(gson.toJson(resp))
+                                                    .withHeaders(headers).withStatusCode(200);
                     } else {
                     JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
                     String greetingString = String.format("Hello %s with email %s and from group %s", 
@@ -105,7 +155,7 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                 }
              return response.withBody("Unautherized access").withHeaders(headers).withStatusCode(500);
             } else {
-                return response.withBody("Wrong Http Method").withHeaders(headers).withStatusCode(404);
+                return response.withBody("Wrong Http Method or Path").withHeaders(headers).withStatusCode(404);
             }
             
         } catch (Exception e) {
