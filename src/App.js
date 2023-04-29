@@ -105,12 +105,18 @@ function App({ signOut, user }) {
    const client_id= "4cdkp46s6b7mjpeg3lmp3b3kgo";
    const client_secreate = "7s7hgt6gq8fnnct3oh49kborpl5m1o1a9e9dsdl21p0h2ik3n1g";
    
-   const DomainUrl = "https://overridetestdomain.auth.ap-south-1.amazoncognito.com"+
-   "/oauth2/token"+"?"+
-   "grant_type=client_credentials"+"&"+
-   "client_id=4cdkp46s6b7mjpeg3lmp3b3kgo"+"&"+
-   "scope=testOverrideIdentifier/json";
+  //  const DomainUrl = "https://overridetestdomain.auth.ap-south-1.amazoncognito.com"+
+  //  "/oauth2/token"+"?"+
+  //  "grant_type=client_credentials"+"&"+
+  //  "client_id=4cdkp46s6b7mjpeg3lmp3b3kgo"+"&"+
+  //  "scope=testOverrideIdentifier/json";
 
+  const url = new URL("https://overridetestdomain.auth.ap-south-1.amazoncognito.com/oauth2/token"); 
+  url.searchParams.set("grant_type","client_credentials");
+  url.searchParams.set("client_id",client_id);
+  url.searchParams.set("scope","testOverrideIdentifier/json");
+
+  console.log(url);
    var clientCred = base64.encode(`${client_id}:${client_secreate}`);
    console.log(clientCred);
    let options = {
@@ -142,7 +148,7 @@ function App({ signOut, user }) {
         //     console.log(error);
         // }
 
-    const resp = await (await fetch(DomainUrl,options)).json()
+    const resp = await (await fetch(url,options)).json()
     console.log(resp);
     return resp.access_token;
 
@@ -274,7 +280,52 @@ function App({ signOut, user }) {
             console.log(error);
         }
     
-        }  
+        }
+      
+        async function setUserPassword(){
+          const apiName = "newAppApi";
+          const path = '/create-user/set-user-password';
+          const myInit = {
+              body:{
+                "userName": newUser.username,
+                "temPassword":"abcd@123"
+              },
+              headers: {
+              Authorization: `Bearer ${(await Auth.currentSession())
+                .getIdToken()
+                .getJwtToken()}`
+            }
+          };
+          try {
+              const response = await API.post(apiName, path, myInit);
+              console.log(response);
+          } catch (error) {
+              console.log(error);
+          }
+      
+          }
+          async function getUserAuthEvent(){
+            const apiName = "newAppApi";
+            const path = '/create-user/list-AuthEvent';
+            const myInit = {
+                body:{
+                  "userName": newUser.username,
+                  // "nextToken":""
+                },
+                headers: {
+                Authorization: `Bearer ${(await Auth.currentSession())
+                  .getIdToken()
+                  .getJwtToken()}`
+              }
+            };
+            try {
+                const response = await API.post(apiName, path, myInit);
+                console.log(response);
+            } catch (error) {
+                console.log(error);
+            }
+        
+            }
 
     async function onChange(e) {
       const file = e.target.files[0];
@@ -455,6 +506,18 @@ function App({ signOut, user }) {
             className=""
             onClick={resetUserPassword}>
                 reset users password
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={setUserPassword}>
+                set users password
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={getUserAuthEvent}>
+                list users auth Events
             </button>
             <button  type="button" onClick={signOut}>Sign out</button>
             <p>{responseVal}</p>

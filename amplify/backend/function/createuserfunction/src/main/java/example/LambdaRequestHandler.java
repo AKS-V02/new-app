@@ -25,8 +25,12 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUse
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUserToGroupResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminListUserAuthEventsRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminListUserAuthEventsResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminResetUserPasswordRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminResetUserPasswordResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminSetUserPasswordRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminSetUserPasswordResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.DeliveryMediumType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.GroupType;
@@ -103,7 +107,7 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                         } 
                         
                         ListUsersResponse responseUsers = cognitoClient.listUsers(req);
-                        String paginationToken = responseUsers.paginationToken() != null ?responseUsers.paginationToken():"Null";
+                        String paginationToken = responseUsers.paginationToken() != null ?responseUsers.paginationToken():"null";
                         return response.withBody(gson.toJson(Map.of("users",responseUsers.users()
                                                         ,"paginationToken", paginationToken)))
                                                 .withHeaders(headers).withStatusCode(200);
@@ -114,6 +118,40 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                                             .username(inputObj.get("userName").getAsString())
                                                             .build());
                         return response.withBody(gson.toJson(resp))
+                                                    .withHeaders(headers).withStatusCode(200);
+                    }else if(input.getPath().contains("set-user-password")){
+                        JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                        AdminSetUserPasswordResponse resp = cognitoClient.adminSetUserPassword(AdminSetUserPasswordRequest.builder()
+                                                                                                .password(inputObj.get("temPassword").getAsString())
+                                                                                                .permanent(false)
+                                                                                                .userPoolId(userPoolId)
+                                                                                                .username(inputObj.get("userName").getAsString())
+                                                                                                .build());
+                        return response.withBody(gson.toJson(resp.responseMetadata()))
+                                                    .withHeaders(headers).withStatusCode(200);
+                    }else if(input.getPath().contains("list-AuthEvent")){
+                        JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+
+                        AdminListUserAuthEventsRequest req = null;
+
+                        if(inputObj.has("nextToken")){
+                            req = AdminListUserAuthEventsRequest.builder()
+                            .userPoolId(userPoolId)
+                            .maxResults(20)
+                            .nextToken(inputObj.get("nextToken").getAsString())
+                            .username(inputObj.get("userName").getAsString())
+                            .build();
+                        } else {
+                            req = AdminListUserAuthEventsRequest.builder()
+                            .userPoolId(userPoolId)
+                            .maxResults(20)
+                            .username(inputObj.get("userName").getAsString())
+                            .build();
+                        }
+
+                        AdminListUserAuthEventsResponse resp = cognitoClient.adminListUserAuthEvents(req);
+                        return response.withBody(gson.toJson(Map.of("authEvents",resp.authEvents(),
+                                                                    "nextToken",resp.nextToken()!=null?resp.nextToken():"null")))
                                                     .withHeaders(headers).withStatusCode(200);
                     } else {
                     JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
