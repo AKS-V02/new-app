@@ -70,33 +70,6 @@
           "category": "function",
           "resourceName": "newappPostConfirmation",
           "triggerProvider": "Cognito"
-        },
-        {
-          "attributes": [
-            "Arn",
-            "Name"
-          ],
-          "category": "function",
-          "resourceName": "newappCreateAuthChallenge",
-          "triggerProvider": "Cognito"
-        },
-        {
-          "attributes": [
-            "Arn",
-            "Name"
-          ],
-          "category": "function",
-          "resourceName": "newappDefineAuthChallenge",
-          "triggerProvider": "Cognito"
-        },
-        {
-          "attributes": [
-            "Arn",
-            "Name"
-          ],
-          "category": "function",
-          "resourceName": "newappVerifyAuthChallengeResponse",
-          "triggerProvider": "Cognito"
         }
       ],
       "frontendAuthConfig": {
@@ -174,25 +147,84 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
-    "newappCreateAuthChallenge": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "newappDefineAuthChallenge": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
     "newappPostConfirmation": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_AdminQueriesa01158f8_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriesa01158f8"
+        }
+      ]
     },
-    "newappVerifyAuthChallengeResponse": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
+    "AMPLIFY_function_AdminQueriesa01158f8_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriesa01158f8"
+        }
+      ]
+    },
+    "AMPLIFY_function_CommentsLambda_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "CommentsLambda"
+        }
+      ]
+    },
+    "AMPLIFY_function_CommentsLambda_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "CommentsLambda"
+        }
+      ]
+    },
+    "AMPLIFY_function_createuserfunction_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "createuserfunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_createuserfunction_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "createuserfunction"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostConfirmation_GROUP": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostConfirmation_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostConfirmation_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostConfirmation"
+        }
+      ]
     }
   },
   "storage": {
