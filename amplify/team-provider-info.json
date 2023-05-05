@@ -21,7 +21,7 @@
         },
         "createuserfunction": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
-          "s3Key": "amplify-builds/createuserfunction-7530477944445673795a-build.zip"
+          "s3Key": "amplify-builds/createuserfunction-474269755373392f534c-build.zip"
         },
         "AdminQueriesa01158f8": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
@@ -31,6 +31,11 @@
           "GROUP": "newgroup",
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
           "s3Key": "amplify-builds/newappPostConfirmation-77783968656a57426f49-build.zip"
+        },
+        "newappCreateAuthChallenge": {},
+        "newappDefineAuthChallenge": {},
+        "newappVerifyAuthChallengeResponse": {
+          "RECAPTCHASECRET": ""
         }
       },
       "auth": {

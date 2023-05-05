@@ -25,6 +25,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUse
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminAddUserToGroupResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminCreateUserResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminGetUserResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminListUserAuthEventsRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminListUserAuthEventsResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminResetUserPasswordRequest;
@@ -33,6 +35,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminSetUse
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminSetUserPasswordResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.DeliveryMediumType;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.GetUserRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.GroupType;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsResponse;
@@ -121,8 +124,26 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                                     .withHeaders(headers).withStatusCode(200);
                     }else if(input.getPath().contains("set-user-password")){
                         JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();
+                        // AdminGetUserResponse user = cognitoClient.adminGetUser(AdminGetUserRequest.builder()
+                        //                                                                         .userPoolId(userPoolId)
+                        //                                                                         .username(inputObj.get("userName").getAsString())
+                        //                                                                         .build());
+                        // for(AttributeType attr:user.userAttributes()){
+                        //     if(attr.name().equalsIgnoreCase("custom:question_1")){
+                        //         if(!attr.value().equalsIgnoreCase(inputObj.get("answer1").getAsString())){
+                        //             return response.withBody(gson.toJson(attr)+inputObj.get("answer1").getAsString())
+                        //                             .withHeaders(headers).withStatusCode(200);
+                        //         }
+                        //     } else if(attr.name().equalsIgnoreCase("custom:question_2")){
+                        //         if(!attr.value().equalsIgnoreCase(inputObj.get("answer2").getAsString())){
+                        //             return response.withBody(gson.toJson(attr)+inputObj.get("answer2").getAsString())
+                        //                             .withHeaders(headers).withStatusCode(200);
+                        //         }
+                        //     }
+                        // }
+
                         AdminSetUserPasswordResponse resp = cognitoClient.adminSetUserPassword(AdminSetUserPasswordRequest.builder()
-                                                                                                .password(inputObj.get("temPassword").getAsString())
+                                                                                                .password(inputObj.get("password").getAsString())
                                                                                                 .permanent(false)
                                                                                                 .userPoolId(userPoolId)
                                                                                                 .username(inputObj.get("userName").getAsString())

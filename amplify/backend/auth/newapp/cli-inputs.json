@@ -61,6 +61,33 @@
           "Arn",
           "Name"
         ]
+      },
+      {
+        "category": "function",
+        "resourceName": "newappCreateAuthChallenge",
+        "triggerProvider": "Cognito",
+        "attributes": [
+          "Arn",
+          "Name"
+        ]
+      },
+      {
+        "category": "function",
+        "resourceName": "newappDefineAuthChallenge",
+        "triggerProvider": "Cognito",
+        "attributes": [
+          "Arn",
+          "Name"
+        ]
+      },
+      {
+        "category": "function",
+        "resourceName": "newappVerifyAuthChallengeResponse",
+        "triggerProvider": "Cognito",
+        "attributes": [
+          "Arn",
+          "Name"
+        ]
       }
     ],
     "userPoolGroupList": [
@@ -72,8 +99,20 @@
     "userPoolGroups": false,
     "adminQueries": true,
     "triggers": {
+      "CreateAuthChallenge": [
+        "captcha-create-challenge",
+        "boilerplate-create-challenge"
+      ],
+      "DefineAuthChallenge": [
+        "captcha-define-challenge",
+        "boilerplate-define-challenge"
+      ],
       "PostConfirmation": [
         "add-to-group"
+      ],
+      "VerifyAuthChallengeResponse": [
+        "captcha-verify",
+        "boilerplate-verify"
       ]
     },
     "hostedUI": false,
@@ -81,7 +120,7 @@
     "parentStack": {
       "Ref": "AWS::StackId"
     },
-    "authTriggerConnections": "[\n  {\n    \"triggerType\": \"PostConfirmation\",\n    \"lambdaFunctionName\": \"newappPostConfirmation\"\n  }\n]",
+    "authTriggerConnections": "[\n  {\n    \"triggerType\": \"CreateAuthChallenge\",\n    \"lambdaFunctionName\": \"newappCreateAuthChallenge\"\n  },\n  {\n    \"triggerType\": \"DefineAuthChallenge\",\n    \"lambdaFunctionName\": \"newappDefineAuthChallenge\"\n  },\n  {\n    \"triggerType\": \"PostConfirmation\",\n    \"lambdaFunctionName\": \"newappPostConfirmation\"\n  },\n  {\n    \"triggerType\": \"VerifyAuthChallengeResponse\",\n    \"lambdaFunctionName\": \"newappVerifyAuthChallengeResponse\"\n  }\n]",
     "permissions": [
       "{\n  \"policyName\": \"AddToGroupCognito\",\n  \"trigger\": \"PostConfirmation\",\n  \"effect\": \"Allow\",\n  \"actions\": [\n    \"cognito-idp:AdminAddUserToGroup\",\n    \"cognito-idp:GetGroup\",\n    \"cognito-idp:CreateGroup\"\n  ],\n  \"resource\": {\n    \"paramType\": \"!GetAtt\",\n    \"keys\": [\n      \"UserPool\",\n      \"Arn\"\n    ]\n  }\n}"
     ]
