@@ -43,5 +43,9 @@
     "aws-cdk": "^2.63.2",
     "aws-cdk-lib": "^2.63.2",
     "constructs": "^10.1.241"
-  }
+  },
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "author": "Ajoy Kumar Sharma",
+  "license": "ISC"
 }

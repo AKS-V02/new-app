@@ -111,6 +111,7 @@
       "service": "Cognito-UserPool-Groups"
     }
   },
+  "custom": {},
   "function": {
     "AdminQueriesa01158f8": {
       "build": true,
