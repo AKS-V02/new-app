@@ -61,8 +61,11 @@ function App({ signOut, user }) {
   const [signedURL, setsignedURL] = useState("");
   const [isUrlAvailable, setisUrlAvailable] = useState(false);
   const [uploadeMassage, setUploadeMassage] = useState(""); 
-
-
+  const [code, setCode] = useState("");
+  const [preferdMfa, setPreferdMfa] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [totpCode, setTotpCode] = useState("");
+  const [varifyTotp, setVarifyTotp] = useState("");
 
 //   async function refreshCredentials(){
 //     return new Promise((resolve, reject)=>{
@@ -452,7 +455,7 @@ function App({ signOut, user }) {
     <div className="App">
       new App
       <h1>Hello {user.username}</h1>
-      <p>{user.getSignInUserSession().getIdToken().decodePayload()['cognito:groups'][0]}</p>
+      <p>{user.getSignInUserSession().getIdToken().decodePayload()['cognito:groups']}</p>
       <p>{process.env.REACT_APP_ID}</p>
       <p>{abs.somting}</p>
       <p>{abs.dothing}</p>
@@ -548,6 +551,105 @@ function App({ signOut, user }) {
             onClick={deleteObject}>
                 delete file
             </button></p>
+
+            <div>
+            <p>
+            <input onChange={(e)=>{setPhoneNumber(e.target.value)}}
+                  name="phonenumber"
+                  placeholder="phonenumber"
+                  value={phoneNumber}
+                  />
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.updateUserAttributes(user,{
+              phone_number:phoneNumber
+            }).then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+             Set Phone Number
+            </button></p>
+            <p>
+
+            <input onChange={(e)=>{setCode(e.target.value)}}
+                  name="varificationCode"
+                  placeholder="varificationCode"
+                  value={code}
+                  />
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.verifyCurrentUserAttribute("phone_number").then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+              send code to phone 
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.verifyCurrentUserAttributeSubmit("phone_number",code).then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+                varify phone
+            </button>
+            </p>
+
+            <p onClick={()=>setPreferdMfa('SMS')}>SMS</p>
+            <p onClick={()=>setPreferdMfa('TOTP')}>TOTP</p>
+            <p onClick={()=>setPreferdMfa('NOMFA')}>NOMFA</p>
+
+            <p>
+            <input onChange={(e)=>{setPreferdMfa(e.target.value)}}
+                  name="preferdMfa"
+                  placeholder="preferdMfa"
+                  value={preferdMfa}
+                  />
+            <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.setPreferredMFA(user,preferdMfa).then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+               set preferd mfa
+            </button>
+            </p>
+            </div>
+
+            <div>
+              <p>
+                
+            <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.setupTOTP(user).then((code) => {
+              // display setup code to user which can be used to manually add an account to Authenticator apps
+              console.log("success");
+              setTotpCode(code)
+            }).catch((err)=>console.log(err))}}>
+             Set up Totp
+            </button>
+              </p>
+            <p>
+
+            {totpCode}
+            </p>
+            <p>
+
+            <input onChange={(e)=>{setVarifyTotp(e.target.value)}}
+                  name="Totp"
+                  placeholder="Totpchallange"
+                  value={varifyTotp}
+                  />
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.verifyTotpToken(user, varifyTotp)
+              .then(() => {
+                console.log("success");
+                // don't forget to set TOTP as the preferred MFA method
+                Auth.setPreferredMFA(user, 'TOTP');
+                // ...
+              })
+              .catch((e) => {
+                // Token is not verified
+                console.log(e);
+              });}}>
+             complete Authenticator
+            </button>
+            </p>
+            </div>
         
     </div>
   );
