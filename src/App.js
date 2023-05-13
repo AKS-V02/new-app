@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import awsexports from './aws-exports'
 // import { CognitoIdentityServiceProvider } from 'aws-sdk';
 // import { withAuthenticator } from '@aws-amplify/ui-react';
+import QRCode from 'qrcode';
 
 Amplify.configure(awsexports);
 Auth.configure({ storage: window.sessionStorage });
@@ -73,6 +74,7 @@ function App() {
   const [isMfa, setIsMfa] = useState(false);
   const [loginUser, setLoginUser] = useState({userName:"",password:""});
   const [newPassword, setNewPassword] = useState("");
+  const [qrCode, setQrCode] = useState("");
 
   Hub.listen('auth',(data)=>{
     switch (data.payload.event) {
@@ -553,6 +555,11 @@ function App() {
             
         })
       }
+    async function qrCodeUrl(totpCode){
+      const url = await QRCode.toDataURL(encodeURI(`otpauth://totp/AWSCognito:${user.username}?secret=${totpCode}&issuer=AWSCognito`))
+      console.log(`otpauth://totp/AWSCognito:${user.username}?secret=${totpCode}&issuer=AWSCognito`)
+      setQrCode(url);
+    }
 
   return (
     <div className="App">
@@ -722,13 +729,26 @@ function App() {
             onClick={()=>{Auth.setupTOTP(user).then((code) => {
               // display setup code to user which can be used to manually add an account to Authenticator apps
               console.log("success");
-              setTotpCode(code)
+              setTotpCode(code);
+              qrCodeUrl(code);
             }).catch((err)=>console.log(err))}}>
              Set up Totp
             </button>
               </p>
-            <p>
 
+            <p>
+            {qrCode &&
+              (
+              <img
+              src={qrCode}
+              alt="qr code"
+              width="228"
+              height="228"
+            />
+              )
+            }
+            </p>
+            <p>
             {totpCode}
             </p>
             <p>
