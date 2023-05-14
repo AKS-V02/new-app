@@ -2,15 +2,15 @@
 import './App.css';
 import { envVar } from './envVar';
 import base64 from "base-64";
-import { Amplify, API, Auth, Storage } from "aws-amplify";
-import { useState } from 'react';
+import { Amplify, API, Auth, Hub, Storage } from "aws-amplify";
+import { useState, useEffect } from 'react';
 // import * as AWS from 'aws-sdk';
 import awsexports from './aws-exports'
 // import { CognitoIdentityServiceProvider } from 'aws-sdk';
-import { withAuthenticator } from '@aws-amplify/ui-react';
+// import { withAuthenticator } from '@aws-amplify/ui-react';
 
 Amplify.configure(awsexports);
-
+Auth.configure({ storage: window.sessionStorage });
 // Amplify.configure({
 //   // aws_cognito_region: "ap-south-1", // (required) - Region where Amazon Cognito project was created
 //   "aws_project_region": "ap-south-1",
@@ -52,7 +52,8 @@ Amplify.configure(awsexports);
 //   }
 // });
 
-function App({ signOut, user }) {
+// function App({ signOut, user }) {
+function App() {
   const abs = envVar[process.env.REACT_APP_DEPLOYMENT_ENV];
   const [responseVal, setResponseVal] = useState(""); 
   const [groups, setGroups] = useState([]);
@@ -61,6 +62,111 @@ function App({ signOut, user }) {
   const [signedURL, setsignedURL] = useState("");
   const [isUrlAvailable, setisUrlAvailable] = useState(false);
   const [uploadeMassage, setUploadeMassage] = useState(""); 
+  const [code, setCode] = useState("");
+  const [preferdMfa, setPreferdMfa] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [totpCode, setTotpCode] = useState("");
+  const [varifyTotp, setVarifyTotp] = useState("");
+  const [isLogedIn, setIsLogedIn] = useState(false);
+  const [user, setUser] = useState({});
+  const [isReset, setIsReset] = useState(false);
+  const [isMfa, setIsMfa] = useState(false);
+  const [loginUser, setLoginUser] = useState({userName:"",password:""});
+  const [newPassword, setNewPassword] = useState("");
+
+  Hub.listen('auth',(data)=>{
+    switch (data.payload.event) {
+      case 'configured':
+        console.log('the Auth module is configured');
+        break;
+      case 'signIn':
+        setIsLogedIn(true);
+        console.log('user signed in');
+        break;
+      case 'signIn_failure':
+        console.log('user sign in failed');
+        break;
+      case 'signUp':
+        console.log('user signed up');
+        break;
+      case 'signUp_failure':
+        console.log('user sign up failed');
+        break;
+      case 'confirmSignUp':
+        console.log('user confirmation successful');
+        break;
+      case 'completeNewPassword_failure':
+        console.log('user did not complete new password flow');
+        break;
+      case 'autoSignIn':
+        console.log('auto sign in successful');
+        break;
+      case 'autoSignIn_failure':
+        console.log('auto sign in failed');
+        break;
+      case 'forgotPassword':
+        console.log('password recovery initiated');
+        break;
+      case 'forgotPassword_failure':
+        console.log('password recovery failed');
+        break;
+      case 'forgotPasswordSubmit':
+        console.log('password confirmation successful');
+        break;
+      case 'forgotPasswordSubmit_failure':
+        console.log('password confirmation failed');
+        break;
+      case 'verify':
+        console.log('TOTP token verification successful');
+        break;
+      case 'tokenRefresh':
+        console.log('token refresh succeeded');
+        break;
+      case 'tokenRefresh_failure':
+        console.log('token refresh failed');
+        break;
+      case 'cognitoHostedUI':
+        console.log('Cognito Hosted UI sign in successful');
+        break;
+      case 'cognitoHostedUI_failure':
+        console.log('Cognito Hosted UI sign in failed');
+        break;
+      case 'customOAuthState':
+        console.log('custom state returned from CognitoHosted UI');
+        break;
+      case 'customState_failure':
+        console.log('custom state failure');
+        break;
+      case 'parsingCallbackUrl':
+        console.log('Cognito Hosted UI OAuth url parsing initiated');
+        break;
+      case 'userDeleted':
+        console.log('user deletion successful');
+        break;
+      case 'updateUserAttributes':
+        console.log('user attributes update successful');
+        break;
+      case 'updateUserAttributes_failure':
+        console.log('user attributes update failed');
+        break;
+      case 'signOut':
+        setIsLogedIn(false);
+        console.log('user signed out');
+        break;
+    }
+  });
+
+  useEffect(()=>{
+    Auth.currentAuthenticatedUser().then((user)=>{
+      console.log("Authenticated");
+        setUser(user);
+        setIsLogedIn(true);
+    }).catch((err)=>{
+      console.log("error fetching user"+err);
+      setUser({});
+      setIsLogedIn(false);
+    });
+  },[isLogedIn])
 
 
 
@@ -451,8 +557,11 @@ function App({ signOut, user }) {
   return (
     <div className="App">
       new App
+      {isLogedIn ?
+      
+      (<>
       <h1>Hello {user.username}</h1>
-      <p>{user.getSignInUserSession().getIdToken().decodePayload()['cognito:groups'][0]}</p>
+      <p>{user.getSignInUserSession().getIdToken().decodePayload()['cognito:groups']}</p>
       <p>{process.env.REACT_APP_ID}</p>
       <p>{abs.somting}</p>
       <p>{abs.dothing}</p>
@@ -519,7 +628,7 @@ function App({ signOut, user }) {
             onClick={getUserAuthEvent}>
                 list users auth Events
             </button>
-            <button  type="button" onClick={signOut}>Sign out</button>
+            <button  type="button" onClick={()=>{Auth.signOut()}}>Sign out</button>
             <p>{responseVal}</p>
             {groups && groups.map((item, index)=>(
               // <p key={index}  onClick={()=>{setNewUser({...newUser, group:item.GroupName})}} >{item.GroupName}</p>
@@ -548,9 +657,234 @@ function App({ signOut, user }) {
             onClick={deleteObject}>
                 delete file
             </button></p>
-        
+
+            <div>
+            <p>
+            <input onChange={(e)=>{setPhoneNumber(e.target.value)}}
+                  name="phonenumber"
+                  placeholder="phonenumber"
+                  value={phoneNumber}
+                  />
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.updateUserAttributes(user,{
+              phone_number:phoneNumber
+            }).then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+             Set Phone Number
+            </button></p>
+            <p>
+
+            <input onChange={(e)=>{setCode(e.target.value)}}
+                  name="varificationCode"
+                  placeholder="varificationCode"
+                  value={code}
+                  />
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.verifyCurrentUserAttribute("phone_number").then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+              send code to phone 
+            </button>
+            <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.verifyCurrentUserAttributeSubmit("phone_number",code).then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+                varify phone
+            </button>
+            </p>
+
+            <p onClick={()=>setPreferdMfa('SMS')}>SMS</p>
+            <p onClick={()=>setPreferdMfa('TOTP')}>TOTP</p>
+            <p onClick={()=>setPreferdMfa('NOMFA')}>NOMFA</p>
+
+            <p>
+            <input onChange={(e)=>{setPreferdMfa(e.target.value)}}
+                  name="preferdMfa"
+                  placeholder="preferdMfa"
+                  value={preferdMfa}
+                  />
+            <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.setPreferredMFA(user,preferdMfa).then((data)=>console.log(data)).catch((err)=>console.log(err))}}>
+               set preferd mfa
+            </button>
+            </p>
+            </div>
+
+            <div>
+              <p>
+                
+            <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.setupTOTP(user).then((code) => {
+              // display setup code to user which can be used to manually add an account to Authenticator apps
+              console.log("success");
+              setTotpCode(code)
+            }).catch((err)=>console.log(err))}}>
+             Set up Totp
+            </button>
+              </p>
+            <p>
+
+            {totpCode}
+            </p>
+            <p>
+
+            <input onChange={(e)=>{setVarifyTotp(e.target.value)}}
+                  name="Totp"
+                  placeholder="Totpchallange"
+                  value={varifyTotp}
+                  />
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.verifyTotpToken(user, varifyTotp)
+              .then(() => {
+                console.log("success");
+                // don't forget to set TOTP as the preferred MFA method
+                Auth.setPreferredMFA(user, 'TOTP');
+                // ...
+              })
+              .catch((e) => {
+                // Token is not verified
+                console.log(e);
+              });}}>
+             complete Authenticator
+            </button>
+            </p>
+            </div>
+            </>
+      ):(<>
+          <p>
+          <input onChange={(e)=>{setLoginUser((prev)=>{return {...prev,userName:e.target.value}})}}
+                  name="username"
+                  placeholder="username"
+                  value={loginUser.userName}
+                  />
+          </p>
+          <p>
+
+          <input onChange={(e)=>{setLoginUser((prev)=>{return {...prev,password:e.target.value}})}}
+                  name="password"
+                  type="password"
+                  placeholder="password"
+                  value={loginUser.password}
+                  />
+          </p>
+          <p>
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.signIn(loginUser.userName, loginUser.password)
+              .then((user) => {
+                setUser(user);
+                console.log(user.challengeName);
+                if (
+                  user.challengeName === 'SMS_MFA' ||
+                  user.challengeName === 'SOFTWARE_TOKEN_MFA'
+                ) {
+                  setIsMfa(true);
+                } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+                  setIsReset(true);
+                } else if (user.challengeName === 'MFA_SETUP') {
+                  
+                } else if (user.challengeName === 'SELECT_MFA_TYPE') {
+                  
+                } else {
+                  console.log(user);
+                }
+                setLoginUser({userName:"",password:""});
+              })
+              .catch((e) => {
+                // Token is not verified
+                console.log(e);
+              });}}>
+             Sign In
+            </button>
+          </p>
+      </>)}
+        {!isLogedIn && isReset && (
+          <>
+          <p>
+
+            <input onChange={(e)=>{setNewPassword(e.target.value)}}
+                  name="newPassword"
+                  placeholder="newPassword"
+                  type="password"
+                  value={newPassword}
+                  />
+          </p>
+          <p>
+
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.completeNewPassword(user, newPassword)
+              .then((user) => {
+                setUser(user);
+                console.log(user.challengeName);
+                if (
+                  user.challengeName === 'SMS_MFA' ||
+                  user.challengeName === 'SOFTWARE_TOKEN_MFA'
+                ) {
+                  setIsMfa(true);
+                } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+                  setIsReset(true);
+                } else if (user.challengeName === 'MFA_SETUP') {
+                  
+                } else if (user.challengeName === 'SELECT_MFA_TYPE') {
+                  
+                } else {
+                  console.log(user);
+                }
+                setIsReset(false);
+                setNewPassword("");
+              })
+              .catch((e) => {
+                // Token is not verified
+                console.log(e);
+              });}}>
+             complete new password
+            </button>
+          </p>
+          </>
+        )}
+
+        {!isLogedIn && isMfa && (
+          <>
+          <p>
+
+            <input onChange={(e)=>{setVarifyTotp(e.target.value)}}
+                  name="code"
+                  placeholder="code"
+                  value={varifyTotp}
+                  />
+          </p>
+          <p>
+              <button
+            type="button"
+            className=""
+            onClick={()=>{Auth.confirmSignIn(user, varifyTotp,'SMS_MFA')
+              .then((user) => {
+                console.log("success");
+               setUser(user);
+               setIsMfa(false);
+               setVarifyTotp("");
+              })
+              .catch((e) => {
+                // Token is not verified
+                console.log(e);
+              });}}>
+             complete Authentication
+            </button>
+          </p>
+          </>
+        )}
     </div>
   );
 }
-
-export default withAuthenticator(App);
+export default App;
+// export default withAuthenticator(App);
