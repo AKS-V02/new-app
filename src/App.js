@@ -555,6 +555,85 @@ function App() {
             
         })
       }
+      async function validateXlsx(file, commaSeperateColNames, uniqColumName){
+        console.log(file);
+        return new Promise((resolve, reject)=>{
+            if(!file || !(file && ["text/csv"].includes(file.type))){
+              console.log("file not found");
+              setUploadeMassage('Valid file not found');
+              resolve(false);
+            } else if(file.size>(20*1024*1024)){ // max file size 20 MB
+              console.log(file.size);
+              console.log("file Size exceded");
+              setUploadeMassage('File Size exceded 20 MB');
+              resolve(false);
+            }else{
+                var reader = new FileReader();
+                reader.readAsText(file);
+                reader.onload = function(e){
+                  var data = e.target.result;
+                  console.log(data);
+                  //invalid char check 
+                  const regexInvalidchar = new RegExp('[$^<>`]','gm')
+                  // var res = data.match(regexInvalidchar);
+                  // console.log(res);
+                  if(regexInvalidchar.test(data)){
+                    console.log("invalid character found");
+                    setUploadeMassage('Invalid character $^<>` found');
+                    resolve(false);
+                    return;
+                  } else{
+                    const comaNum = data.slice(0,data.indexOf('\n')).match(/[,]/g).length
+                    const regexReplaceEmptyRow = new RegExp('[ \r]|\n,{'+comaNum+'}|\n$','gm'); 
+                    var rowData = data.toLowerCase().replace(regexReplaceEmptyRow,'').split("\n");
+                    // Header Formate Check
+                    if(!commaSeperateColNames.toLowerCase().replace(/[ ]/g,'').includes(rowData[0])){
+                      console.log("Csv File Hedder Is Not Correct");
+                      setUploadeMassage('Csv File Hedder Is Not Correct it should be '+commaSeperateColNames);
+                      resolve(false);
+                      return;
+                    }
+                    // dublicate recorde check
+                    var checkList = [];
+                    const colNum = rowData[0].split(",").indexOf(uniqColumName);
+                    const totalRowNum = rowData.length;
+                    // var lastelement = "";
+                    console.log(rowData);
+                    for(var row = 1; row < totalRowNum; row++){
+                        // lastelement = rowData.pop();
+                        // console.log(lastelement);
+                        // if(rowData.includes(lastelement)){
+                        //   console.log("dublicate recorde found at"+rowData.indexOf(lastelement));
+                        //   resolve(false);
+                        //   return;
+                        // } else if(rowData.length<=2){
+                        //   console.log("valid recordes");
+                        //   resolve(true);
+                        //   return;
+                        // }
+                        var colVal = rowData[row].split(",")[colNum];
+                        if(checkList.includes(colVal)){
+                            console.log("dublicate recorde found at"+row);
+                            setUploadeMassage("Dublicate recorde found at row "+row+" for unique column '"+uniqColumName+"'");
+                            resolve(false);
+                            return;
+                          }
+                          checkList.push(colVal);
+                    }
+                    console.log("valid recordes");
+                    setUploadeMassage('Valid File');
+                    resolve(true);
+                    return;
+                  }
+                }
+                
+                reader.onerror = function(e){
+                  reject(e.target.error.name);
+                }
+            }
+            
+        })
+      }
     async function qrCodeUrl(totpCode){
       const url = await QRCode.toDataURL(encodeURI(`otpauth://totp/AWSCognito:${user.username}?secret=${totpCode}&issuer=AWSCognito`))
       console.log(`otpauth://totp/AWSCognito:${user.username}?secret=${totpCode}&issuer=AWSCognito`)
