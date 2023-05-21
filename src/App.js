@@ -9,6 +9,7 @@ import awsexports from './aws-exports'
 // import { CognitoIdentityServiceProvider } from 'aws-sdk';
 // import { withAuthenticator } from '@aws-amplify/ui-react';
 import QRCode from 'qrcode';
+import * as XLSX from 'xlsx/xlsx.mjs'
 
 Amplify.configure(awsexports);
 Auth.configure({ storage: window.sessionStorage });
@@ -438,21 +439,23 @@ function App() {
     async function onChange(e) {
       const file = e.target.files[0];
       try {
-       const isVali = await validateCsv(file, "name, value, age, product, to address, from address", "name");
+       const isVali = await validateXlsx({file, 
+                                        startingEditableColumnName:"name, value, age, product, to address, from address", 
+                                        uniqColumName:"name"});
         // const isVali = true;
         if(isVali){
-          const response = await Storage.put(file.name, file ,{
-            progressCallback(progress) {
-              console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
-            }
-          }
-          //   {
-          //   contentType: "image/png", // contentType is optional
+          // const response = await Storage.put(file.name, file ,{
+          //   progressCallback(progress) {
+          //     console.log(`Uploaded: ${progress.loaded}/${progress.total}`);
+          //   }
           // }
-          );
-          console.log(response);
+          // //   {
+          // //   contentType: "image/png", // contentType is optional
+          // // }
+          // );
+          // console.log(response);
           console.log("valid file");
-          setfileName(response.key);
+          //setfileName(response.key);
         } else {
           console.log("not a valid file");
           setfileName("");
@@ -555,76 +558,49 @@ function App() {
             
         })
       }
-      async function validateXlsx(file, commaSeperateColNames, uniqColumName){
+      async function validateXlsx({file, startingEditableColumnName, uniqColumName}){
         console.log(file);
         return new Promise((resolve, reject)=>{
-            if(!file || !(file && ["text/csv"].includes(file.type))){
+            if(!file || !(file && ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-excel"].includes(file.type))){
               console.log("file not found");
               setUploadeMassage('Valid file not found');
               resolve(false);
-            } else if(file.size>(20*1024*1024)){ // max file size 20 MB
+            } else if(file.size>(6*1024*1024)){ // max file size 6 MB
               console.log(file.size);
               console.log("file Size exceded");
-              setUploadeMassage('File Size exceded 20 MB');
+              setUploadeMassage('File Size exceded 6 MB');
               resolve(false);
             }else{
                 var reader = new FileReader();
-                reader.readAsText(file);
+                reader.readAsArrayBuffer(file);
                 reader.onload = function(e){
                   var data = e.target.result;
                   console.log(data);
-                  //invalid char check 
-                  const regexInvalidchar = new RegExp('[$^<>`]','gm')
-                  // var res = data.match(regexInvalidchar);
-                  // console.log(res);
-                  if(regexInvalidchar.test(data)){
-                    console.log("invalid character found");
-                    setUploadeMassage('Invalid character $^<>` found');
-                    resolve(false);
-                    return;
-                  } else{
-                    const comaNum = data.slice(0,data.indexOf('\n')).match(/[,]/g).length
-                    const regexReplaceEmptyRow = new RegExp('[ \r]|\n,{'+comaNum+'}|\n$','gm'); 
-                    var rowData = data.toLowerCase().replace(regexReplaceEmptyRow,'').split("\n");
-                    // Header Formate Check
-                    if(!commaSeperateColNames.toLowerCase().replace(/[ ]/g,'').includes(rowData[0])){
-                      console.log("Csv File Hedder Is Not Correct");
-                      setUploadeMassage('Csv File Hedder Is Not Correct it should be '+commaSeperateColNames);
-                      resolve(false);
-                      return;
+                  const wb = XLSX.read(data);
+                  console.log(wb);
+                  var container = document.getElementById("table");
+                  container.innerHTML = XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[0]],{id:"my-Table",editable:true});
+                  const jsonData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});
+                  console.log(jsonData);
+                  jsonData.forEach((a,rowNum)=> {
+                    for(var colNum=0;colNum<a.length;i++){
+                      if(a[colNum]){
+                        console.log(a[colNum]);
+                      }else{
+                        console.log("empty");
+                        break;
+                      }
                     }
-                    // dublicate recorde check
-                    var checkList = [];
-                    const colNum = rowData[0].split(",").indexOf(uniqColumName);
-                    const totalRowNum = rowData.length;
-                    // var lastelement = "";
-                    console.log(rowData);
-                    for(var row = 1; row < totalRowNum; row++){
-                        // lastelement = rowData.pop();
-                        // console.log(lastelement);
-                        // if(rowData.includes(lastelement)){
-                        //   console.log("dublicate recorde found at"+rowData.indexOf(lastelement));
-                        //   resolve(false);
-                        //   return;
-                        // } else if(rowData.length<=2){
-                        //   console.log("valid recordes");
-                        //   resolve(true);
-                        //   return;
-                        // }
-                        var colVal = rowData[row].split(",")[colNum];
-                        if(checkList.includes(colVal)){
-                            console.log("dublicate recorde found at"+row);
-                            setUploadeMassage("Dublicate recorde found at row "+row+" for unique column '"+uniqColumName+"'");
-                            resolve(false);
-                            return;
-                          }
-                          checkList.push(colVal);
-                    }
-                    console.log("valid recordes");
-                    setUploadeMassage('Valid File');
-                    resolve(true);
-                    return;
-                  }
+                  });
+                  // var ws = XLSX.utils.json_to_sheet([
+                  //   { A:"S", B:"h", C:"e", D:"e", E:"t", F:"J", G:"S" },
+                  //   { A: 1,  B: 2,  C: 3,  D: 4,  E: 5,  F: 6,  G: 7  },
+                  //   { A: 2,  B: 3,  C: 4,  D: 5,  E: 6,  F: 7,  G: 8  }
+                  // ], {header:["A","B","C","D","E","F","G"], skipHeader:true});
+                  // var workbook = XLSX.utils.book_new();
+                  // XLSX.utils.book_append_sheet(workbook,ws,"New Sheet");
+                  // XLSX.writeFileXLSX(workbook,"newFile.xlsx",{Props:{Author:"System"}})
+                  resolve(false);
                 }
                 
                 reader.onerror = function(e){
@@ -722,7 +698,7 @@ function App() {
             ))}
 
       <p>
-      <input title='csvFile' type="file" onChange={onChange} accept=".csv,text/csv" />
+      <input title='Upload File' type="file" onChange={onChange} accept=".xlsx,.xls" />
       </p>
       {uploadeMassage && (<p>{uploadeMassage}</p>)}
       <p><input onChange={(e)=>{setfileName(e.target.value);}}
@@ -743,7 +719,11 @@ function App() {
             onClick={deleteObject}>
                 delete file
             </button></p>
+              <p>
+                <div id="table" style={{display:"inline-table"}}>
 
+                </div>
+              </p>
             <div>
             <p>
             <input onChange={(e)=>{setPhoneNumber(e.target.value)}}
