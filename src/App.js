@@ -4,12 +4,15 @@ import { envVar } from './envVar';
 import base64 from "base-64";
 import { Amplify, API, Auth, Hub, Storage } from "aws-amplify";
 import { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx/xlsx.mjs';
 // import * as AWS from 'aws-sdk';
 import awsexports from './aws-exports'
+import data from './data.json';
 // import { CognitoIdentityServiceProvider } from 'aws-sdk';
 // import { withAuthenticator } from '@aws-amplify/ui-react';
 import QRCode from 'qrcode';
-import * as XLSX from 'xlsx/xlsx.mjs'
+import useXlsxValidator from './useXlsxValidator';
+
 
 Amplify.configure(awsexports);
 Auth.configure({ storage: window.sessionStorage });
@@ -54,6 +57,9 @@ Auth.configure({ storage: window.sessionStorage });
 //   }
 // });
 
+const initialDataArray=data.body;
+
+
 // function App({ signOut, user }) {
 function App() {
   const abs = envVar[process.env.REACT_APP_DEPLOYMENT_ENV];
@@ -76,6 +82,7 @@ function App() {
   const [loginUser, setLoginUser] = useState({userName:"",password:""});
   const [newPassword, setNewPassword] = useState("");
   const [qrCode, setQrCode] = useState("");
+  const [validationMsg, xlsxAoa, isProcessing,tableElement,uniqColumnValues, setXlsxAoa, setFile] = useXlsxValidator({initialDataArray, startingEditableColumnNum:2, uniqColumNum:0})
 
   Hub.listen('auth',(data)=>{
     switch (data.payload.event) {
@@ -439,6 +446,7 @@ function App() {
     async function onChange(e) {
       const file = e.target.files[0];
       try {
+        // validateXlsx(file);
        const isVali = await validateCsv(file, "name, value, age, product, to address, from address", "name");
         // const isVali = true;
         if(isVali){
@@ -476,6 +484,51 @@ function App() {
         setisUrlAvailable(false);
         setsignedURL("");
       }
+
+      // async function validateXlsx(file){
+      //   console.log(file);
+      //   return new Promise((resolve, reject)=>{
+      //       if(!file || !(file && ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-excel"].includes(file.type))){
+      //         console.log("file not found");
+              
+      //         resolve([]);
+      //       } else if(file.size>(6*1024*1024)){ // max file size 6 MB
+      //         console.log(file.size);
+      //         console.log("file Size exceded");
+              
+      //         resolve([]);
+      //       }else{
+      //           var reader = new FileReader();
+      //           reader.readAsArrayBuffer(file);
+      //           reader.onload = function(e){
+      //             var data = e.target.result;
+      //             console.log(data);
+      //             const wb = XLSX.read(data);
+      //             console.log(wb);
+      //             const jsonData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]],{header:1});
+      //             console.log(JSON.stringify(jsonData));
+                  
+      //           //   var container = document.getElementById("table");
+      //           //   container.innerHTML = XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[0]],{id:"my-Table",editable:true});
+      //             // var ws = XLSX.utils.json_to_sheet([
+      //             //   { A:"S", B:"h", C:"e", D:"e", E:"t", F:"J", G:"S" },
+      //             //   { A: 1,  B: 2,  C: 3,  D: 4,  E: 5,  F: 6,  G: 7  },
+      //             //   { A: 2,  B: 3,  C: 4,  D: 5,  E: 6,  F: 7,  G: 8  }
+      //             // ], {header:["A","B","C","D","E","F","G"], skipHeader:true});
+      //             // var workbook = XLSX.utils.book_new();
+      //             // XLSX.utils.book_append_sheet(workbook,ws,"New Sheet");
+      //             // XLSX.writeFileXLSX(workbook,"newFile.xlsx",{Props:{Author:"System"}})
+      //             resolve(jsonData);
+      //           }
+                
+      //           reader.onerror = function(e){
+                  
+      //             reject(e.target.error.name);
+      //           }
+      //       }
+            
+      //   })
+      // }
 
       async function validateCsv(file, commaSeperateColNames, uniqColumName){
         console.log(file);
@@ -644,7 +697,7 @@ function App() {
             ))}
 
       <p>
-      <input title='Upload File' type="file" onChange={onChange} accept=".xlsx,.xls" />
+      <input title='Upload File' type="file" onChange={onChange} accept=".csv" />
       </p>
       {uploadeMassage && (<p>{uploadeMassage}</p>)}
       <p><input onChange={(e)=>{setfileName(e.target.value);}}
@@ -665,11 +718,6 @@ function App() {
             onClick={deleteObject}>
                 delete file
             </button></p>
-              <p>
-                <div id="table" style={{display:"inline-table"}}>
-
-                </div>
-              </p>
             <div>
             <p>
             <input onChange={(e)=>{setPhoneNumber(e.target.value)}}
@@ -830,6 +878,14 @@ function App() {
              Sign In
             </button>
           </p>
+          <p>
+          <input title='Upload File' type="file" onChange={(e)=>setFile(e.target.files[0])} accept=".xlsx,.xls" />
+          </p>
+          <p>{JSON.stringify(validationMsg)}</p>
+          {/* <p>{JSON.stringify(uniqColumnValues)}</p> */}
+          <div id="table" style={{display:"inline-table"}}>
+                {tableElement}
+                </div>
       </>)}
         {!isLogedIn && isReset && (
           <>
