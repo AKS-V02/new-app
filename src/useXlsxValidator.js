@@ -19,20 +19,50 @@ const initialValidationMsg = {
       errorMsg:[]
   }
 }
-export default function useXlsxValidator({initialDataArray,startingEditableColumnNum, uniqColumNum}){
+String.prototype.format = function () {
+  // store arguments in an array
+  var args = arguments;
+  // use replace to iterate over the string
+  // select the match and check if the related argument is present
+  // if yes, replace the match with the argument
+  return this.replace(/{([0-9]+)}/g, function (match, index) {
+    // check if the argument is present
+    return typeof args[index] == 'undefined' ? match : args[index];
+  });
+};
+const errorMassages = {
+  fileFormate:"Only .XLS or .XLSX files can be uploaded",
+  fileSize:"File size cannot be more than 6 MB",
+  artifactCountLimit:"Uploaded file cannot have more than {0} records",
+  blankFile:"Uploaded file is blank",
+  columnSequence:"File cannot be uploaded as the column sequence is not as per the template",
+  columnNames:"File cannot be uploaded as the column names are not as per the template",
+  missingMappingLevel:"Mapping levels are missing",
+  invalidArtifactName:"Invalid Artifact Name",
+  dublicateArtifact:"Duplicate Artifact Name found",
+  missingArtifactName:"Artifact Name is missing for one or more records.",
+  specialCharacter:"Special characters $ ^ < > ` not allowed",
+  maliciousMandatory:'"Miscellaneous" artifact mapping is mandatory',
+  alreadyExists:"Same external system path already exists. Please provide a unique external system path",
+  maxCharecter:"Maximum 50 characters allowed"
+}
+export default function useXlsxValidator({initialDataArray,startingEditableColumnNum, uniqColumNum,workSheetNum}){
     const [validationMsg, setValidationMsg] = useState(initialValidationMsg);
     const [xlsxAoa, setXlsxAoa] = useState([]);
     // const [utility, setUtility] = useState({startingEditableColumnNum, uniqColumNum, tableDivId});
+    // const [rowElementList,setRowElementList] = useState([]);
     const [tableElement,setTableElement]=useState(<table></table>);
     const [isProcessing, setIsProcessing] = useState(false);
     const [uniqColumnValues, setUniqColumnValues] = useState([]);
     const regexInvalidchar = new RegExp('[$^<>`]','gm')
     useEffect(()=>{
+      setUniqColumnValues([])
       populateTable(initialDataArray, false);
       console.log("uniqColumnValues"+uniqColumnValues)
     },[]);
 
     async function setFile(file){
+        setValidationMsg(initialValidationMsg);
         const aoaData = await validateXlsx(file);
         if(aoaData.length<=0) return; 
         populateTable(aoaData, true);
@@ -60,31 +90,39 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
                   console.log(data);
                   const wb = XLSX.read(data);
                   console.log(wb);
-                  const jsonData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[1]],{header:1});
+                  const jsonData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[workSheetNum]],{header:1,blankrows:false});
                   console.log(jsonData);
                   if(jsonData.length <=1){
                     setValidationMsg((prev)=>{return {...prev,validFileMsg:{errorMsg:'Uploaded File is Blank',isvalid:false}}});
                     setIsProcessing(false);
                     resolve([]);
+                    return;
                   }
+                  // console.log(jsonData.length+" "+(uniqColumnValues.length+1));
+                  // console.log(JSON.stringify(uniqColumnValues))
                   if(jsonData.length >(uniqColumnValues.length+1)){
-                    setValidationMsg((prev)=>{return {...prev,validFileMsg:{errorMsg:'uploade faild more than 275 row found',isvalid:false}}});
+                    setValidationMsg((prev)=>{return {...prev,validFileMsg:{errorMsg:'uploade faild more than {0} row found'.format(uniqColumnValues.length),isvalid:false}}});
                     setIsProcessing(false);
                     resolve([]);
+                    return;
                   }
                   for(var colNum=0;colNum<startingEditableColumnNum;colNum++){
                     if(xlsxAoa[0][colNum].toLowerCase()!==jsonData[0][colNum].toLowerCase()){
                       setValidationMsg((prev)=>{return {...prev,validFileMsg:{errorMsg:'File can not be uploaded as column name is not as per template',isvalid:false}}});
                       setIsProcessing(false);
                       resolve([]);
+                      return;
                     }
                   }
+                  var level = 1;
                   for(var colNum=startingEditableColumnNum;colNum<jsonData[0].length;colNum++){
-                    var level = 1;
-                    if(jsonData[0][colNum].trim().toLowerCase()!=='external system level '+level){
+                    // console.log(jsonData[0][colNum].trim().toLowerCase());
+                    // console.log(`external system level ${level}`);
+                    if(jsonData[0][colNum].trim().toLowerCase()!==`external system level ${level}`){
                       setValidationMsg((prev)=>{return {...prev,validFileMsg:{errorMsg:'File can not be uploaded as column sequensce is not as per template',isvalid:false}}});
                       setIsProcessing(false);
-                      // resolve([]);
+                      resolve([]);
+                      return;
                     }
                     level++;
                   }
@@ -162,7 +200,7 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
                   return {...prev, rowLevelErrorMsg:{isAvailable:true,errorMsg:[ ...prev.rowLevelErrorMsg.errorMsg, [rowNum+1,"artifact name is missing"]]}}
                 });
                 return;
-              }else if(!uniqColumnValues.includes(a[uniqColumNum].toLowerCase())){
+              }else if(!uniqColumnValues.includes(a[uniqColumNum].trim().toLowerCase())){
                 setValidationMsg((prev)=>{
                   // prev.rowLevelErrorMsg.errorMsg.push([a[uniqColumNum],"Invalid artifact name"]);
                   return {...prev, rowLevelErrorMsg:{isAvailable:true,errorMsg:[ ...prev.rowLevelErrorMsg.errorMsg, [a[uniqColumNum],"Invalid artifact name"]]}}
@@ -178,7 +216,8 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
                 alreadyAvailableArtifact.push(a[uniqColumNum].toLowerCase());
               }
             }else{
-              setUniqColumnValues((prev)=> {prev.push(a[uniqColumNum].toLowerCase()); return prev});
+              // console.log(a[uniqColumNum].toLowerCase()+" "+rowNum);
+              setUniqColumnValues((prev)=> {return [ ...prev, a[uniqColumNum].trim().toLowerCase()]});
             }
             if(a.length<=startingEditableColumnNum && a[uniqColumNum].toLowerCase()!=='miscellaneous')return;
             for(var colNum=0;colNum<startingEditableColumnNum;colNum++){
@@ -277,8 +316,8 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
           setXlsxAoa(aoa);
           if(isUploaded){
             setValidationMsg((prev)=>{
-              const processed = aoa.length;
-              const unprocessed = aoaData.length-processed;
+              const processed = aoa.length-1;
+              const unprocessed = (aoaData.length-1)-processed;
               return {...prev,processingMsg:{processedRowNum:processed, unProcessedRowNum:unprocessed}}
             });
           } 

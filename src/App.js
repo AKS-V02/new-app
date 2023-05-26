@@ -82,7 +82,18 @@ function App() {
   const [loginUser, setLoginUser] = useState({userName:"",password:""});
   const [newPassword, setNewPassword] = useState("");
   const [qrCode, setQrCode] = useState("");
-  const [validationMsg, xlsxAoa, isProcessing,tableElement,uniqColumnValues, setXlsxAoa, setFile] = useXlsxValidator({initialDataArray, startingEditableColumnNum:2, uniqColumNum:0})
+  const [validationMsg, 
+          xlsxAoa, 
+          isProcessing,
+          tableElement,
+          uniqColumnValues, 
+          setXlsxAoa, 
+          setFile] = useXlsxValidator({
+                      initialDataArray, 
+                      startingEditableColumnNum:2, 
+                      uniqColumNum:0,
+                      workSheetNum:1
+                    })
 
   Hub.listen('auth',(data)=>{
     switch (data.payload.event) {
@@ -879,11 +890,11 @@ function App() {
             </button>
           </p>
           <p>
-          <input title='Upload File' type="file" onChange={(e)=>setFile(e.target.files[0])} accept=".xlsx,.xls" />
+          <input title='Upload File' type="file" onChange={(e)=>{setFile(e.target.files[0]);e.target.value=""}} accept=".xlsx,.xls" />
           </p>
           <p>{JSON.stringify(validationMsg)}</p>
           {/* <p>{JSON.stringify(uniqColumnValues)}</p> */}
-          <div id="table" style={{display:"inline-table"}}>
+          <div id="table" style={{display:"grid",gap:'50px'}}>
                 {tableElement}
                 </div>
       </>)}
