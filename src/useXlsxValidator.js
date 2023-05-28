@@ -1,5 +1,7 @@
 import { createElement, useEffect, useState } from "react";
+import ReactDOM from 'react-dom/client';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import TableDataComponent from './TableDataComponent';
 
 const initialValidationMsg = {
     validFileMsg:{
@@ -16,7 +18,7 @@ const initialValidationMsg = {
     },
     columLevelErrorMsg:{
       isAvailable:false,
-      errorMsg:[]
+      errorMsg:{}
   }
 }
 String.prototype.format = function () {
@@ -46,20 +48,22 @@ const errorMassages = {
   alreadyExists:"Same external system path already exists. Please provide a unique external system path",
   maxCharecter:"Maximum 50 characters allowed"
 }
-export default function useXlsxValidator({initialDataArray,startingEditableColumnNum, uniqColumNum,workSheetNum}){
+export default function useXlsxValidator({initialDataArray,startingEditableColumnNum, uniqColumNum,workSheetNum,edit,tableDivId}){
     const [validationMsg, setValidationMsg] = useState(initialValidationMsg);
     const [xlsxAoa, setXlsxAoa] = useState([]);
     // const [utility, setUtility] = useState({startingEditableColumnNum, uniqColumNum, tableDivId});
-    // const [rowElementList,setRowElementList] = useState([]);
+    const [editable,setEditable] = useState(edit);
     const [tableElement,setTableElement]=useState(<table></table>);
     const [isProcessing, setIsProcessing] = useState(false);
     const [uniqColumnValues, setUniqColumnValues] = useState([]);
-    const regexInvalidchar = new RegExp('[$^<>`]','gm')
+    const [key, setKey] = useState(new Date());
+    const regexInvalidchar = new RegExp('[$^<>`]','gm');
     useEffect(()=>{
       setUniqColumnValues([])
       populateTable(initialDataArray, false);
-      console.log("uniqColumnValues"+uniqColumnValues)
-    },[]);
+      console.log("uniqColumnValues "+uniqColumnValues)
+      console.log("editable "+editable)
+    },[editable]);
 
     async function setFile(file){
         setValidationMsg(initialValidationMsg);
@@ -253,7 +257,8 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
                   setValidationMsg((prev)=>{return {...prev,validFileMsg:{errorMsg:'Miscellaneous is mandatory',isvalid:false}}});
                   return;
                 }
-                trowNode.push(createElement('td',{'row':aoa.length, 'col':colNum},createElement('input',{type:'text'})));
+                // trowNode.push(createElement('td',{'row':aoa.length, 'col':colNum},createElement('input',{type:'text'})));
+                trowNode.push(<TableDataComponent rowNum={aoa.length} colNum={colNum} error="" value="" editable={editable} validateValue={validateValue}/>);
             }
 
 
@@ -263,7 +268,7 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
                 row.push(a[colNum]);
 
                 // let td = document.createElement('td');
-                let tdNode = [];
+                // let tdNode = [];
                 // let input = document.createElement('input');
                 // input.append(a[colNum]);
                 // // input.value = a[colNum];
@@ -271,22 +276,24 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
                 // td.append(input);
                 // td.setAttribute('row',aoa.length);
                 // td.setAttribute('col',colNum);
-                tdNode.push(createElement('input',{type:'text', 'row':aoa.length, 'col':colNum, value:a[colNum]}))        
+                
+                // tdNode.push(createElement('input',{type:'text', 'row':aoa.length, 'col':colNum, value:a[colNum]}))        
 
                 let error = validateValue(a[colNum]);
-                if(error!==""){
-                  setValidationMsg((prev)=>{
-                    // prev.columLevelErrorMsg.isAvailable = true;
-                    // prev.columLevelErrorMsg.errorMsg.push([a[uniqColumNum],error]);
-                    return {...prev, columLevelErrorMsg:{isAvailable:true,errorMsg:[ ...prev.columLevelErrorMsg.errorMsg , [a[uniqColumNum],error]]}}
-                  });
-                  // let span = document.createElement('span');
-                  // span.textContent = error;
-                  // td.append(span);
-                  tdNode.push(createElement('span',{},error));
-                }
+                // if(error!==""){
+                //   setValidationMsg((prev)=>{
+                //     prev.columLevelErrorMsg.isAvailable = true;
+                //     prev.columLevelErrorMsg.errorMsg[a[uniqColumNum]+" "+colNum]=error;
+                //     // return {...prev, columLevelErrorMsg:{isAvailable:true,errorMsg:{ [a[uniqColumNum]+" "+colNum]:error}}}
+                //     return prev; 
+                //   });
+                //   // let span = document.createElement('span');
+                //   // span.textContent = error;
+                //   // td.append(span);
+                // }
+                // tdNode.push(<InputComponet rowNum={aoa.length} colNum={colNum} error={error} value={a[colNum]}/>)
                 // trow.append(td);
-                trowNode.push(createElement('td',{'row':aoa.length, 'col':colNum},tdNode));
+                trowNode.push(<TableDataComponent rowNum={aoa.length} colNum={colNum} error={error} value={a[colNum]} editable={editable} validateValue={validateValue}/>);
               }else{
                 if(isUploaded && a[uniqColumNum].trim().toLowerCase()==='miscellaneous' && colNum===startingEditableColumnNum){
                   isMaliciousAvailable =false;
@@ -322,14 +329,16 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
             });
           } 
           // table.append(tbody);
-          tableNode.push(createElement('tbody',null,tbodyNode));
+          tableNode.push(createElement('tbody',{id:"artifact_map_table_body"},tbodyNode));
           // console.log(table);
           console.log(validationMsg);
-          setTableElement(createElement('table',null,tableNode));
-          
+          // setTableElement((<table></table>));
+          setTableElement(createElement('table',{id:"artifact_map_table"},tableNode));
+          // const tableRoot = ReactDOM.createRoot(document.getElementById(tableDivId));
+          // tableRoot.render(createElement('table',{id:"artifact_map_table"},tableNode));
       }
 
-
+      
       function validateValue(value){
         var errorMsg = "";
         if(value.length>50){
@@ -340,8 +349,62 @@ export default function useXlsxValidator({initialDataArray,startingEditableColum
         return errorMsg;
       }
 
+      function addColumn({}){
 
-    return [validationMsg, xlsxAoa, isProcessing, tableElement, uniqColumnValues, setXlsxAoa, setFile]
+      }
+
+      function addRow(){
+          var trowNode = [];
+          trowNode.push(createElement('td',{'row':xlsxAoa.length, 'col':0},"col 0"));
+          trowNode.push(createElement('td',{'row':xlsxAoa.length, 'col':1},"col 1"));
+          trowNode.push(<TableDataComponent rowNum={xlsxAoa.length} colNum={2} error="" value="" editable={editable} validateValue={validateValue}/>);
+          var rowElement = createElement('tr',{id:"new Row".trim().replace(/[ ]/g,"_"), key:[new Date()]},trowNode);
+          var nweTableElement = tableElement;
+          nweTableElement.props.children[1].props.children.push(rowElement);
+          // var nweTableElement = createElement('table',{id:"artifact_map_table"},[ ...tableElement.props.children , rowElement])
+          // setTableElement((prev)=>{
+          //   console.log("called");
+          
+          //   prev.props.children[1].props.children.push(rowElement)
+          //   console.log(prev);
+          //   return (<>{ prev }</>)
+          // })
+          // const tableRoot = ReactDOM.createRoot(document.getElementById(tableDivId));
+          // tableRoot.render(nweTableElement);
+          setTableElement(nweTableElement);
+          // setKey(new Date());
+      }
+
+      function savetable(){
+        var ws = XLSX.utils.aoa_to_sheet(xlsxAoa)
+        // json_to_sheet([
+        //   { A:"S", B:"h", C:"e", D:"e", E:"t", F:"J", G:"S" },
+        //   { A: 1,  B: 2,  C: 3,  D: 4,  E: 5,  F: 6,  G: 7  },
+        //   { A: 2,  B: 3,  C: 4,  D: 5,  E: 6,  F: 7,  G: 8  }
+        // ], {header:["A","B","C","D","E","F","G"], skipHeader:true});
+        var workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook,ws,"New Sheet");
+        XLSX.writeFileXLSX(workbook,"newFile.xlsx",{Props:{Author:"System"}})
+      }
+      // function setEditabletest(){
+      //   setTableElement((prev)=>{
+      //     prev.props.children[1].props.children = prev.props.children[1].props.children.map(
+      //                           (value,index)=>{
+      //                             value.props.children=value.props.children.map((val,idx)=>{
+      //                               if(idx>=2){
+      //                                 console.log(val.props+" "+idx);
+      //                                 val.props.editable = false;
+      //                                 return val;
+      //                               }
+      //                               return val;
+      //                             })
+      //                             return value;
+      //                           })
+      //     return prev;
+      //   })
+      // }
+
+    return [validationMsg, xlsxAoa, isProcessing, tableElement, uniqColumnValues, key, setXlsxAoa, setFile, setEditable, addRow]
 }
 
 

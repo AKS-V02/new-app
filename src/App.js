@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx/xlsx.mjs';
 // import * as AWS from 'aws-sdk';
 import awsexports from './aws-exports'
 import data from './data.json';
+// import inputComponent from './InputComponent';
 // import { CognitoIdentityServiceProvider } from 'aws-sdk';
 // import { withAuthenticator } from '@aws-amplify/ui-react';
 import QRCode from 'qrcode';
@@ -87,12 +88,17 @@ function App() {
           isProcessing,
           tableElement,
           uniqColumnValues, 
+          key,
           setXlsxAoa, 
-          setFile] = useXlsxValidator({
+          setFile,
+          setEditable,
+          savetable] = useXlsxValidator({
                       initialDataArray, 
                       startingEditableColumnNum:2, 
                       uniqColumNum:0,
-                      workSheetNum:1
+                      workSheetNum:1,
+                      edit:true,
+                      tableDivId:"table"
                     })
 
   Hub.listen('auth',(data)=>{
@@ -894,9 +900,15 @@ function App() {
           </p>
           <p>{JSON.stringify(validationMsg)}</p>
           {/* <p>{JSON.stringify(uniqColumnValues)}</p> */}
-          <div id="table" style={{display:"grid",gap:'50px'}}>
+          <div key={key} id="table" style={{display:"grid",gap:'50px'}}>
                 {tableElement}
-                </div>
+          </div>
+                <button type='button' onClick={()=>setEditable((prev)=> !prev)}>
+                  edit table
+                </button>
+                <button type='button' onClick={()=>savetable()}>
+                  save table
+                </button>
       </>)}
         {!isLogedIn && isReset && (
           <>
