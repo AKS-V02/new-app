@@ -16,6 +16,7 @@ dependencies {
         'com.google.code.gson:gson:2.10.1',
         'software.amazon.awssdk:cognitoidentityprovider:2.20.37'
     )
+	testImplementation('org.junit.jupiter:junit-jupiter:5.9.3')
 }
 
 jar.baseName = 'latest_build'

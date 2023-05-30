@@ -13,6 +13,7 @@ import data from './data.json';
 // import { withAuthenticator } from '@aws-amplify/ui-react';
 import QRCode from 'qrcode';
 import useXlsxValidator from './useXlsxValidator';
+import TableComponent from './TableComponent';
 
 
 Amplify.configure(awsexports);
@@ -92,7 +93,8 @@ function App() {
           setXlsxAoa, 
           setFile,
           setEditable,
-          savetable] = useXlsxValidator({
+          savetable,
+          validateValue] = useXlsxValidator({
                       initialDataArray, 
                       startingEditableColumnNum:2, 
                       uniqColumNum:0,
@@ -899,10 +901,12 @@ function App() {
           <input title='Upload File' type="file" onChange={(e)=>{setFile(e.target.files[0]);e.target.value=""}} accept=".xlsx,.xls" />
           </p>
           <p>{JSON.stringify(validationMsg)}</p>
+          <p>{JSON.stringify(xlsxAoa)}</p>
           {/* <p>{JSON.stringify(uniqColumnValues)}</p> */}
           <div key={key} id="table" style={{display:"grid",gap:'50px'}}>
                 {tableElement}
           </div>
+
                 <button type='button' onClick={()=>setEditable((prev)=> !prev)}>
                   edit table
                 </button>

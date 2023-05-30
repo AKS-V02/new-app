@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react"
 
-export default function TableDataComponent({value,error,rowNum,colNum,editable,validateValue}){
+export default function TableDataComponent({value, rowNum, colNum, mandatory, editable, validateValue, updateValue}){
     const [state, setState] = useState({value:"",error:""})
     
     useEffect(()=>{
-        setState({value,error});
-    },[value,error,editable])
+        setState({value,error:validateValue(value, mandatory)});
+        console.log(editable);
+    },[value,editable])
     
     function onChange(newValue){
         // var newValue = e.target.value;
-        var newError = validateValue(newValue);
-        setState({value:newValue,error:newError});
+        var newError = validateValue(newValue, mandatory);
+        setState((prev)=> {return {value:newValue,error:newError}});
+        updateValue({rowNum, colNum, value:newValue});
     }
 
     // function validateValue(value){
@@ -28,10 +30,10 @@ export default function TableDataComponent({value,error,rowNum,colNum,editable,v
     if(editable){
         return (
             <>
-            <td>
-                <div style={{display: "inline-grid"}}>
-                    <input key={rowNum+" "+colNum} row={rowNum} col={colNum} onChange={(e)=>onChange(e.target.value)} value={state.value}></input>
-                    {state.error && (<span>{state.error}</span>)}
+            <td key={"dataCol"+"_"+rowNum+"_"+colNum}>
+                <div key={"div"+"_"+rowNum+"_"+colNum} style={{display: "inline-grid"}}>
+                    <input key={rowNum+"_"+colNum} row={rowNum} col={colNum} onChange={(e)=>onChange(e.target.value)} value={state.value}></input>
+                    {state.error!=="" && (<span key={"error"+"_"+rowNum+"_"+colNum} id={"error"+"_"+rowNum+"_"+colNum}>{state.error}</span>)}
                 </div>
             </td>
             </>
@@ -39,7 +41,11 @@ export default function TableDataComponent({value,error,rowNum,colNum,editable,v
     }else{
         return (
             <>
-            <td>{state.value}</td>
+            <td key={"dataCol"+"_"+rowNum+"_"+colNum} row={rowNum} col={colNum}>
+                <span>
+                    {state.value}
+                </span>
+            </td>
             </>
         )
     }
