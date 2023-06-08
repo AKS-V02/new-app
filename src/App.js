@@ -10,7 +10,7 @@ import awsexports from './aws-exports'
 import data from './data.json';
 // import inputComponent from './InputComponent';
 // import { CognitoIdentityServiceProvider } from 'aws-sdk';
-// import { withAuthenticator } from '@aws-amplify/ui-react';
+import { withAuthenticator } from '@aws-amplify/ui-react';
 import QRCode from 'qrcode';
 import useXlsxValidator from './useXlsxValidator';
 import TableComponent from './TableComponent';
@@ -994,5 +994,5 @@ function App() {
     </div>
   );
 }
-export default App;
-// export default withAuthenticator(App);
+// export default App;
+export default withAuthenticator(App);

@@ -70,6 +70,24 @@
           "category": "function",
           "resourceName": "newappPostConfirmation",
           "triggerProvider": "Cognito"
+        },
+        {
+          "attributes": [
+            "Arn",
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "newappPostAuthentication",
+          "triggerProvider": "Cognito"
+        },
+        {
+          "attributes": [
+            "Arn",
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "newappPreAuthentication",
+          "triggerProvider": "Cognito"
         }
       ],
       "frontendAuthConfig": {
@@ -148,8 +166,19 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "newappPostAuthentication": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "newappPostConfirmation": {
       "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "newappPreAuthentication": {
+      "build": true,
+      "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     }
@@ -203,6 +232,22 @@
         }
       ]
     },
+    "AMPLIFY_function_newappPostAuthentication_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostAuthentication"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPostAuthentication_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPostAuthentication"
+        }
+      ]
+    },
     "AMPLIFY_function_newappPostConfirmation_GROUP": {
       "usedBy": [
         {
@@ -224,6 +269,22 @@
         {
           "category": "function",
           "resourceName": "newappPostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPreAuthentication_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPreAuthentication"
+        }
+      ]
+    },
+    "AMPLIFY_function_newappPreAuthentication_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "newappPreAuthentication"
         }
       ]
     }

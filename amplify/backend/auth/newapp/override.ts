@@ -234,6 +234,8 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     resources.userPoolClientWeb.addPropertyOverride("IdTokenValidity",30);
     resources.userPoolClientWeb.addPropertyOverride("RefreshTokenValidity",60);
 
+    resources.userPoolClientWeb.addPropertyOverride("PreventUserExistenceErrors","ENABLED");
+
     resources.userPoolClient.addPropertyOverride("TokenValidityUnits",{
       "AccessToken" : "minutes",
       "IdToken" : "minutes",
@@ -242,6 +244,8 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     resources.userPoolClient.addPropertyOverride("AccessTokenValidity",30);
     resources.userPoolClient.addPropertyOverride("IdTokenValidity",30);
     resources.userPoolClient.addPropertyOverride("RefreshTokenValidity",60);
+
+    // resources.userPoolClient.addPropertyOverride("PreventUserExistenceErrors","ENABLED");
 
     resources.addCfnResource({
         type: "AWS::Cognito::UserPoolClient",

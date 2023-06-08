@@ -117,7 +117,7 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                                             .userPoolId(userPoolId)
                                                             .username(inputObj.get("userName").getAsString())
                                                             .build());
-                        return response.withBody(gson.toJson(resp))
+                        return response.withBody(gson.toJson(resp.responseMetadata()))
                                                     .withHeaders(headers).withStatusCode(200);
                     }else if(input.getPath().contains("set-user-password")){
                         JsonObject inputObj = JsonParser.parseString(input.getBody()).getAsJsonObject();

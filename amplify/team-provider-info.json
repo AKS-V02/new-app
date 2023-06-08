@@ -21,7 +21,7 @@
         },
         "createuserfunction": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
-          "s3Key": "amplify-builds/createuserfunction-3969787a365573504957-build.zip"
+          "s3Key": "amplify-builds/createuserfunction-624b46356f7432416f6c-build.zip"
         },
         "AdminQueriesa01158f8": {
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
@@ -30,7 +30,15 @@
         "newappPostConfirmation": {
           "GROUP": "newgroup",
           "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
-          "s3Key": "amplify-builds/newappPostConfirmation-77783968656a57426f49-build.zip"
+          "s3Key": "amplify-builds/newappPostConfirmation-4e33546e735978543034-build.zip"
+        },
+        "newappPostAuthentication": {
+          "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
+          "s3Key": "amplify-builds/newappPostAuthentication-444f6e42514f7a676871-build.zip"
+        },
+        "newappPreAuthentication": {
+          "deploymentBucketName": "amplify-newapp-dev-172655-deployment",
+          "s3Key": "amplify-builds/newappPreAuthentication-6e7351342f4543497a42-build.zip"
         }
       },
       "auth": {
