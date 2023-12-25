@@ -38,6 +38,12 @@ export function override(resources: AmplifyApiRestResourceStackTemplate) {
     },
     "ResourseIdentifier",
   );
+
+  resources.restApi.body.paths['/items']
+  .options['x-amazon-apigateway-integration']
+  .responses.default
+  .responseParameters['method.response.header.Access-Control-Allow-Origin'] ="";
+
   // create the authorizer using the AuthCognitoUserPoolId parameter defined above
   resources.restApi.addPropertyOverride("Body.securityDefinitions", {
     Cognito: {

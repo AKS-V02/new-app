@@ -151,7 +151,14 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
   //   }
   // },"usertogroupattachement");
 
-
+resources.userPool.accountRecoverySetting = {
+  recoveryMechanisms:[
+    {
+      name:"verified_email",
+      priority:1
+    }
+  ]
+}
 
   //property override for mail configuration
   resources.userPool.addPropertyOverride("AdminCreateUserConfig",
@@ -172,6 +179,7 @@ export function override(resources: AmplifyAuthCognitoStackTemplate) {
     // "SmsMessage" : String
   });
    
+
   
   // to get prefered group role aws credentials
   resources.identityPoolRoleMap.addPropertyOverride("RoleMappings",{

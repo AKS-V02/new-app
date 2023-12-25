@@ -250,7 +250,10 @@ function App() {
   url.searchParams.set("grant_type","client_credentials");
   url.searchParams.set("client_id",client_id);
   url.searchParams.set("scope","testOverrideIdentifier/json");
-
+  // const serchparam = new URLSearchParams(document.location.search);
+  // serchparam.has();
+  // window.history.pushState();
+    
   console.log(url);
    var clientCred = base64.encode(`${client_id}:${client_secreate}`);
    console.log(clientCred);
@@ -634,6 +637,12 @@ function App() {
       setQrCode(url);
     }
 
+
+    function newFunction(val1, val2){
+      console.log("val1 = "+val1);
+      console.log("val2 = "+val2);
+    }
+
   return (
     <div className="App">
       new App
@@ -913,6 +922,14 @@ function App() {
                 <button type='button' onClick={()=>savetable()}>
                   save table
                 </button>
+
+
+                <button type='button' onClick={()=>newFunction("ssss","gggg")}>
+                  check Function with value
+                </button>
+                <button type='button' onClick={()=>newFunction("ddddd")}>
+                  check Function with out value
+                </button>
       </>)}
         {!isLogedIn && isReset && (
           <>
@@ -994,5 +1011,5 @@ function App() {
     </div>
   );
 }
-// export default App;
-export default withAuthenticator(App);
+export default App;
+// export default withAuthenticator(App);

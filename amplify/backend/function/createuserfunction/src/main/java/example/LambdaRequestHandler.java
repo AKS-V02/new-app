@@ -6,10 +6,17 @@ Amplify Params - DO NOT EDIT */
 
 package example;
 
+// import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+// import com.amazonaws.encryptionsdk.AwsCrypto;
+// import com.amazonaws.encryptionsdk.CommitmentPolicy;
+// import com.amazonaws.encryptionsdk.CryptoResult;
+// import com.amazonaws.encryptionsdk.kmssdkv2.KmsMasterKey;
+// import com.amazonaws.encryptionsdk.kmssdkv2.KmsMasterKeyProvider;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -48,8 +55,13 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
                                                     .region(Region.AP_SOUTH_1)
                                                     // .credentialsProvider(ProfileCredentialsProvider.create())    
                                                     .build();
-
-    String userPoolId = System.getenv("AUTH_NEWAPP_USERPOOLID");
+    // private static final AwsCrypto crypto = AwsCrypto.builder()
+    //                         .withCommitmentPolicy(CommitmentPolicy.RequireEncryptRequireDecrypt)
+    //                         .build();
+    // private static final String KMSKEYARN = "arn:aws:kms:us-west-2:207499381473:key/f0ee0cbb-3434-4359-9fe6-de655ffcb44c";
+    // private static final KmsMasterKeyProvider keyProvider = KmsMasterKeyProvider.builder().buildStrict(KMSKEYARN);
+    
+    private static final String userPoolId = System.getenv("AUTH_NEWAPP_USERPOOLID");
     Gson gson = new Gson();
 
     @Override
@@ -57,9 +69,19 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
             LambdaLogger logger = context.getLogger();
 
         try {
+            // CryptoResult<byte[], KmsMasterKey> encryptResult = crypto.encryptData(keyProvider,
+            //                                                     "jdjddj".getBytes(StandardCharsets.UTF_8));
+            // byte[] cipherbyte = encryptResult.getResult();
+            // String ciphertext = new String(cipherbyte,StandardCharsets.UTF_8);
+            
+            // CryptoResult<byte[], KmsMasterKey> decryptResult = crypto.decryptData(keyProvider,
+            //                                 ciphertext.getBytes(StandardCharsets.UTF_8));
+            
+            // LinkedHashMap<String,Object> claim = (LinkedHashMap) input.getRequestContext().getAuthorizer().get("claims");
+            // gson.toJsonTree(input.getRequestContext().getAuthorizer().get("claims")).getAsJsonObject();
             if (input.getHttpMethod().equalsIgnoreCase("POST")){
-                String jsonString = gson.toJson(input.getRequestContext().getAuthorizer().get("claims"));
-                JsonObject obj = JsonParser.parseString(jsonString).getAsJsonObject();
+                // String jsonString = gson.toJson(input.getRequestContext().getAuthorizer().get("claims"));
+                JsonObject obj = gson.toJsonTree(input.getRequestContext().getAuthorizer().get("claims")).getAsJsonObject();
                 if(obj.has("cognito:groups") && obj.get("cognito:groups").getAsString().contains("admin")){
                     if(input.getPath().contains("list-group")){
                         ListGroupsResponse responseGroup = cognitoClient.listGroups(ListGroupsRequest.builder()
@@ -215,6 +237,7 @@ public class LambdaRequestHandler implements RequestHandler<APIGatewayProxyReque
             }
             
         } catch (Exception e) {
+            logger.log("exception "+ e);
             return response.withBody("Error: "+e).withHeaders(headers).withStatusCode(500);
         }  
     }

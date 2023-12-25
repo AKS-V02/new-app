@@ -11,10 +11,14 @@ repositories {
 
 dependencies {
    implementation (
-        'com.amazonaws:aws-lambda-java-core:1.2.0',
-        'com.amazonaws:aws-lambda-java-events:2.2.7',
+        'com.amazonaws:aws-lambda-java-core:1.2.2',
+        'com.amazonaws:aws-lambda-java-events:3.11.2',
         'com.google.code.gson:gson:2.10.1',
-        'software.amazon.awssdk:cognitoidentityprovider:2.20.37'
+        'com.amazonaws:aws-encryption-sdk-java:2.4.0',
+        'software.amazon.awssdk:core:2.20.102',
+        'software.amazon.awssdk:kms:2.20.102',
+        'software.amazon.awssdk:cognitoidentityprovider:2.20.37',
+        'io.jsonwebtoken:jjwt-api:0.11.5'
     )
 	testImplementation('org.junit.jupiter:junit-jupiter:5.9.3')
 }
